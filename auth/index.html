@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Join Us - ProjectZG</title>
+    <!-- Use Font Awesome for Social Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <!-- Load Tailwind CSS -->
+    <script src="../lib/tailwindcss.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: 'rgb(94, 63, 226)',
+                        secondary: 'rgb(107, 114, 128)',
+                        surface: '#ffffff',
+                        bg: '#f3f4f6'
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:400,800&display=swap" rel="stylesheet">
+    <!-- Custom CSS for Animations -->
+    <link rel="stylesheet" href="../css/auth.css">
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-bg flex justify-center items-center flex-col h-screen -my-5 pb-12">
+
+    <div class="container bg-surface rounded-2xl shadow-2xl relative overflow-hidden w-full max-w-3xl min-h-[480px]" id="container">
+        
+        <!-- Sign Up Form -->
+        <div class="form-container sign-up-container bg-surface flex flex-col items-center justify-center h-full px-12 text-center">
+            <form action="#" class="w-full h-full flex flex-col items-center justify-center bg-surface">
+                <h1 class="font-bold text-3xl m-0 text-gray-800">Create Account</h1>
+                <div class="social-container my-5">
+                    <a href="#" class="social border border-gray-300 rounded-full inline-flex justify-center items-center mx-1 h-10 w-10 text-gray-700 hover:bg-gray-100 transition"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="social border border-gray-300 rounded-full inline-flex justify-center items-center mx-1 h-10 w-10 text-gray-700 hover:bg-gray-100 transition"><i class="fab fa-google-plus-g"></i></a>
+                    <a href="#" class="social border border-gray-300 rounded-full inline-flex justify-center items-center mx-1 h-10 w-10 text-gray-700 hover:bg-gray-100 transition"><i class="fab fa-linkedin-in"></i></a>
+                </div>
+                <span class="text-xs text-gray-500 mb-4">or use your email for registration</span>
+                <input type="text" placeholder="Name" class="bg-gray-100 border-none p-3 my-2 w-full outline-none" />
+                <input type="email" placeholder="Email" class="bg-gray-100 border-none p-3 my-2 w-full outline-none" />
+                <input type="password" placeholder="Password" class="bg-gray-100 border-none p-3 my-2 w-full outline-none" />
+                <button class="mt-4 rounded-full border border-primary bg-primary text-white text-xs font-bold py-3 px-12 tracking-wider uppercase transition-transform active:scale-95 focus:outline-none">Sign Up</button>
+                <div class="mt-4 md:hidden">
+                    <p class="text-xs text-secondary">Already have an account? <a href="#" id="mobileSignIn" class="text-primary font-bold">Sign In</a></p>
+                </div>
+            </form>
+        </div>
+
+        <!-- Sign In Form -->
+        <div class="form-container sign-in-container bg-surface flex flex-col items-center justify-center h-full px-12 text-center">
+            <form action="#" class="w-full h-full flex flex-col items-center justify-center bg-surface">
+                <h1 class="font-bold text-3xl m-0 text-gray-800">Sign in</h1>
+                <div class="social-container my-5">
+                    <a href="#" class="social border border-gray-300 rounded-full inline-flex justify-center items-center mx-1 h-10 w-10 text-gray-700 hover:bg-gray-100 transition"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="social border border-gray-300 rounded-full inline-flex justify-center items-center mx-1 h-10 w-10 text-gray-700 hover:bg-gray-100 transition"><i class="fab fa-google-plus-g"></i></a>
+                    <a href="#" class="social border border-gray-300 rounded-full inline-flex justify-center items-center mx-1 h-10 w-10 text-gray-700 hover:bg-gray-100 transition"><i class="fab fa-linkedin-in"></i></a>
+                </div>
+                <span class="text-xs text-gray-500 mb-4">or use your account</span>
+                <input type="email" placeholder="Email" class="bg-gray-100 border-none p-3 my-2 w-full outline-none" />
+                <input type="password" placeholder="Password" class="bg-gray-100 border-none p-3 my-2 w-full outline-none" />
+                <a href="#" class="text-gray-800 text-sm no-underline my-4">Forgot your password?</a>
+                <button class="mt-2 rounded-full border border-primary bg-primary text-white text-xs font-bold py-3 px-12 tracking-wider uppercase transition-transform active:scale-95 focus:outline-none">Sign In</button>
+                <div class="mt-4 md:hidden">
+                    <p class="text-xs text-secondary">Don't have an account? <a href="#" id="mobileSignUp" class="text-primary font-bold">Sign Up</a></p>
+                </div>
+            </form>
+        </div>
+
+        <!-- Overlay -->
+        <div class="overlay-container">
+            <div class="overlay">
+                <div class="overlay-panel overlay-left text-white">
+                    <h1 class="font-bold text-3xl m-0 mb-4">Welcome Back!</h1>
+                    <p class="text-sm font-thin leading-5 tracking-wide mb-8">To keep connected with us please login</p>
+                    <button class="ghost mt-2 rounded-full border border-white bg-transparent text-white text-xs font-bold py-3 px-12 tracking-wider uppercase transition-transform active:scale-95 focus:outline-none" id="signIn">Sign In</button>
+                </div>
+                <div class="overlay-panel overlay-right text-white">
+                    <h1 class="font-bold text-3xl m-0 mb-4">Hello, Friend!</h1>
+                    <p class="text-sm font-thin leading-5 tracking-wide mb-8">Enter your personal details and start journey with us</p>
+                    <button class="ghost mt-2 rounded-full border border-white bg-transparent text-white text-xs font-bold py-3 px-12 tracking-wider uppercase transition-transform active:scale-95 focus:outline-none" id="signUp">Sign Up</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toggle Logic -->
+    <script src="../js/auth.js"></script>
+</body>
+</html>
