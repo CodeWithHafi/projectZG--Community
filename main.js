@@ -43,7 +43,7 @@ app.use((req, res, next) => {
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com",
         "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com",
         "img-src 'self' data: https: blob:",
-        "connect-src 'self' https://*.supabase.co https://unpkg.com https://vercel.live",
+        "connect-src 'self' https://*.supabase.co https://unpkg.com https://vercel.live wss://ws-us3.pusher.com https://sockjs-us3.pusher.com",
         "frame-src 'self' https://vercel.live", // Added vercel.live for toolbar
         "frame-ancestors 'none'",
         "base-uri 'self'",

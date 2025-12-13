@@ -187,7 +187,14 @@ const googleAuth = async (req, res) => {
 
     } catch (err) {
         console.error('OAuth Error:', err);
-        res.status(500).json({ error: 'Internal Server Error' });
+        res.status(500).json({
+            error: 'Internal Server Error',
+            details: err.message,
+            env_check: {
+                has_origin: !!process.env.ALLOWED_ORIGIN,
+                has_origins: !!process.env.ALLOWED_ORIGINS
+            }
+        });
     }
 };
 
