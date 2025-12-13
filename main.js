@@ -64,6 +64,11 @@ app.use(express.json());
 // Serve static files from 'public' directory
 app.use(express.static('public'));
 
+// Explicit root handler for Vercel
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/index.html'));
+});
+
 // Serve auth pages with clean URLs
 const path = require('path');
 
