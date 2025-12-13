@@ -4,18 +4,27 @@
 /* 1. CSS Variables for Theming (Light Mode Default) */
 /* -------------------------------------------------------------------------- */
 :root {
-    --color-primary-rgb: 94, 63, 226; /* Indigo-600 */
+    --color-primary-rgb: 94, 63, 226;
+    /* Indigo-600 */
     --color-primary: rgb(var(--color-primary-rgb));
 
     /* Light Mode */
-    --color-bg-rgb: 243, 244, 246; /* gray-100 - Page background */
-    --color-surface-rgb: 255, 255, 255; /* white - Card/Sidebar background */
-    --color-text-main-rgb: 31, 41, 55; /* gray-800 */
-    --color-text-secondary-rgb: 107, 114, 128; /* gray-500 */
-    --color-border-rgb: 229, 231, 235; /* gray-200 */
-    --color-hover-bg-rgb: 238, 242, 255; /* indigo-50 */
-    --color-placeholder-bg-rgb: 229, 231, 235; /* gray-200 */
-    --color-liked-rgb: 239, 68, 68; /* red-500 */
+    --color-bg-rgb: 243, 244, 246;
+    /* gray-100 - Page background */
+    --color-surface-rgb: 255, 255, 255;
+    /* white - Card/Sidebar background */
+    --color-text-main-rgb: 31, 41, 55;
+    /* gray-800 */
+    --color-text-secondary-rgb: 107, 114, 128;
+    /* gray-500 */
+    --color-border-rgb: 229, 231, 235;
+    /* gray-200 */
+    --color-hover-bg-rgb: 238, 242, 255;
+    /* indigo-50 */
+    --color-placeholder-bg-rgb: 229, 231, 235;
+    /* gray-200 */
+    --color-liked-rgb: 239, 68, 68;
+    /* red-500 */
 }
 
 /* -------------------------------------------------------------------------- */
@@ -36,24 +45,31 @@
 .bg-bg {
     background-color: rgb(var(--color-bg-rgb));
 }
+
 .bg-surface {
     background-color: rgb(var(--color-surface-rgb));
 }
+
 .text-main {
     color: rgb(var(--color-text-main-rgb));
 }
+
 .text-secondary {
     color: rgb(var(--color-text-secondary-rgb));
 }
+
 .bg-hover-bg {
     background-color: rgb(var(--color-hover-bg-rgb));
 }
+
 .border-app {
     border-color: rgb(var(--color-border-rgb));
 }
+
 .bg-placeholder-bg {
     background-color: rgb(var(--color-placeholder-bg-rgb));
 }
+
 .bg-liked {
     background-color: rgb(var(--color-liked-rgb));
 }
@@ -62,12 +78,15 @@
 .text-primary {
     color: var(--color-primary);
 }
+
 .bg-primary {
     background-color: var(--color-primary);
 }
+
 .border-primary {
     border-color: var(--color-primary);
 }
+
 .fill-primary {
     fill: var(--color-primary);
 }
@@ -140,12 +159,72 @@
 /* 4. FAB Rotation Animation */
 /* -------------------------------------------------------------------------- */
 #fab-mobile .lucide {
-    transition: transform 0.3s
-        ease-out; /* Smooth transition for the icon itself */
+    transition: transform 0.3s ease-out;
+    /* Smooth transition for the icon itself */
 }
 
 #fab-mobile.rotate-active .lucide {
-    transform: rotate(45deg); /* Rotate 45 degrees when active */
+    transform: rotate(45deg);
+    /* Rotate 45 degrees when active */
+}
+
+/* -------------------------------------------------------------------------- */
+/* 5. Auth Animations */
+/* -------------------------------------------------------------------------- */
+@keyframes show {
+
+    0%,
+    49.99% {
+        opacity: 0;
+        z-index: 1;
+    }
+
+    50%,
+    100% {
+        opacity: 1;
+        z-index: 5;
+    }
+}
+
+.animate-show {
+    animation: show 0.8s;
+}
+
+/* -------------------------------------------------------------------------- */
+/* 6. Toast Animations */
+/* -------------------------------------------------------------------------- */
+@keyframes toastSlideIn {
+    0% {
+        transform: translateX(120%);
+        opacity: 0;
+    }
+
+    100% {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes toastSlideOut {
+    0% {
+        transform: translateX(0);
+        opacity: 1;
+    }
+
+    100% {
+        transform: translateX(120%);
+        opacity: 0;
+    }
+}
+
+@keyframes toastProgress {
+    0% {
+        width: 100%;
+    }
+
+    100% {
+        width: 0%;
+    }
 }
 
 /* Ensure transitions are smooth */

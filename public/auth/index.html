@@ -6,44 +6,41 @@
     <title>Join Us - ProjectZG</title>
     
     <!-- Favicons -->
-    <link rel="icon" type="image/png" sizes="16x16" href="../favicon/icons8-dev-community-color-16.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="../favicon/icons8-dev-community-color-32.png">
-    <link rel="icon" type="image/png" sizes="48x48" href="../favicon/icons8-dev-community-color-48.png">
-    <link rel="icon" type="image/png" sizes="96x96" href="../favicon/icons8-dev-community-color-96.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="../favicon/icons8-dev-community-color-180.png">
-    <link rel="icon" type="image/png" sizes="192x192" href="../favicon/icons8-dev-community-color-192.png">
-    <link rel="icon" type="image/png" sizes="512x512" href="../favicon/icons8-dev-community-color-512.png">
-    <meta name="msapplication-TileImage" content="../favicon/icons8-dev-community-color-144.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../img/ico/icons8-dev-community-color-16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../img/ico/icons8-dev-community-color-32.png">
+    <link rel="icon" type="image/png" sizes="48x48" href="../img/ico/icons8-dev-community-color-48.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="../img/ico/icons8-dev-community-color-96.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="../img/ico/icons8-dev-community-color-180.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="../img/ico/icons8-dev-community-color-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="../img/ico/icons8-dev-community-color-512.png">
+    <meta name="msapplication-TileImage" content="../img/ico/icons8-dev-community-color-144.png">
     <meta name="msapplication-TileColor" content="#5e3fe2">
     <!-- Use Font Awesome for Social Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css?family=Montserrat:400,800&display=swap" rel="stylesheet">
-    <!-- Custom CSS for Animations -->
-    <link rel="stylesheet" href="../css/auth.css">
-    <link rel="stylesheet" href="../css/ui/toast.css">
-    <link rel="stylesheet" href="../css/ui/header.css">
-    <link rel="stylesheet" href="../css/ui/footer.css">
+    <!-- Custom CSS (compiled Tailwind) -->
+    <link rel="stylesheet" href="/css/dist/global.css">
     <style>
-        body {
-            font-family: 'Montserrat', sans-serif;
-        }
+        /* Minimal critical overrides that are hard to Tailwind-ize cleanly due to specific layout needs */
+        body { font-family: 'Montserrat', sans-serif; }
     </style>
 </head>
-<body class="auth-page flex justify-center items-center flex-col min-h-screen relative overflow-hidden">
+<body class="bg-gray-900 text-white flex justify-center items-center flex-col min-h-screen relative pt-[100px] pb-0 overflow-hidden">
 
-    <!-- Gradient Overlay -->
-    <div class="bg-gradient-overlay"></div>
+    <!-- Gradient Overlay Background -->
+    <div class="absolute inset-0 z-0 bg-linear-to-br from-[#1a1a2e] via-[#16213e] to-[#0f3460]"></div>
 
     <div id="toast-container" class="toast-container"></div>
 
-    <div class="container bg-surface rounded-2xl shadow-2xl relative overflow-hidden w-full max-w-3xl min-h-[480px] z-10" id="container">
+    <!-- VIEW 1: LOGIN / SIGNUP (Main Auth Container) -->
+    <div id="view-auth" class="auth-view active group hidden [&.active]:flex relative overflow-hidden w-full max-w-[768px] min-h-[480px] bg-white rounded-2xl shadow-2xl z-10 md:w-full md:max-w-full md:min-h-screen md:rounded-none md:shadow-none md:m-0">
         
         <!-- Sign Up Form -->
-        <div class="form-container sign-up-container bg-surface flex flex-col items-center justify-center h-full px-12 text-center">
-            <form action="#" class="w-full h-full flex flex-col items-center justify-center bg-surface">
-                <h1 class="font-bold text-3xl m-0 text-gray-800">Create Account</h1>
-                <div class="social-container my-5">
+        <div class="absolute top-0 h-full transition-all duration-800 ease-in-out left-0 w-1/2 opacity-0 z-10 group-[.right-panel-active]:translate-x-full group-[.right-panel-active]:opacity-100 group-[.right-panel-active]:z-50 group-[.right-panel-active]:animate-show md:w-full md:static md:opacity-100 md:z-10 md:group-[.right-panel-active]:translate-x-0 md:group-[.right-panel-active]:hidden">
+            <form action="#" class="bg-white flex flex-col items-center justify-center h-full px-12 text-center text-gray-800">
+                <h1 class="font-bold text-3xl m-0">Create Account</h1>
+                <div class="flex my-5">
                     <a href="#" id="signup-facebook" class="social border border-gray-300 rounded-full inline-flex justify-center items-center mx-1 h-10 w-10 text-gray-700 hover:bg-gray-100 transition"><i class="fab fa-facebook-f"></i></a>
                     <a href="#" id="signup-google" class="social border border-gray-300 rounded-full inline-flex justify-center items-center mx-1 h-10 w-10 text-gray-700 hover:bg-gray-100 transition"><i class="fab fa-google-plus-g"></i></a>
                     <a href="#" class="social border border-gray-300 rounded-full inline-flex justify-center items-center mx-1 h-10 w-10 text-gray-700 hover:bg-gray-100 transition"><i class="fab fa-linkedin-in"></i></a>
@@ -52,18 +49,30 @@
                 <input type="text" id="signup-username" placeholder="Username" class="bg-gray-100 border-none p-3 my-2 w-full outline-none rounded-lg" autocomplete="username" required minlength="3" maxlength="30" pattern="^[a-zA-Z0-9_]+$" title="Username can only contain letters, numbers, and underscores" />
                 <input type="email" id="signup-email" placeholder="Email" class="bg-gray-100 border-none p-3 my-2 w-full outline-none rounded-lg" autocomplete="email" required />
                 <input type="password" id="signup-password" placeholder="Password" class="bg-gray-100 border-none p-3 my-2 w-full outline-none rounded-lg" autocomplete="new-password" required minlength="8" pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':&quot;\\|,.<>\/?]).{8,}$" title="Password must be at least 8 characters with lowercase, uppercase, number, and symbol" />
-                <button id="btn-signup" class="mt-4 rounded-full border border-primary bg-primary text-white text-xs font-bold py-3 px-12 tracking-wider uppercase transition-transform active:scale-95 focus:outline-none">Sign Up</button>
-                <div class="mt-4 md:hidden">
+                <button id="btn-signup" class="mt-4 rounded-full border border-primary bg-primary text-white text-xs font-bold py-3 px-12 tracking-wider uppercase transition-transform active:scale-95 focus:outline-none hover:opacity-90">Sign Up</button>
+                <div class="mt-4 hidden md:block">
                     <p class="text-xs text-secondary">Already have an account? <a href="#" id="mobileSignIn" class="text-primary font-bold">Sign In</a></p>
                 </div>
             </form>
         </div>
 
         <!-- Sign In Form -->
-        <div class="form-container sign-in-container bg-surface flex flex-col items-center justify-center h-full px-12 text-center">
-            <form action="#" class="w-full h-full flex flex-col items-center justify-center bg-surface">
-                <h1 class="font-bold text-3xl m-0 text-gray-800">Sign in</h1>
-                <div class="social-container my-5">
+        <div class="absolute top-0 h-full transition-all duration-800 ease-in-out left-0 w-1/2 z-20 group-[.right-panel-active]:translate-x-full group-[.right-panel-active]:opacity-0 group-[.right-panel-active]:z-10 md:w-full md:static md:opacity-100 md:z-10 md:group-[.right-panel-active]:translate-x-0 md:group-[.right-panel-active]:hidden md:hidden md:[&.active]:flex">
+             <!-- Note: Mobile logic needs to be handled carefully. The original CSS just stacked them and used opacity. 
+                  My Tailwind translation: 
+                  - Desktop: Absolute positioning + transforms.
+                  - Mobile (md): Static positioning, visibility toggled via JS adding 'right-panel-active' which triggers hidden/block logic or opacity.
+                  The original CSS for mobile: .sign-in-container { width: 100% } .right-panel-active .sign-in-container { opacity: 0; z-index: 1; transform: translateX(0); }
+                  Wait, 'md' in Tailwind is min-width 768px. My mobile styles should be default or max-md.
+                  Correcting: Standard 'md' usage means "desktop".
+                  Let's stick to the previous desktop-first logic but refined:
+                  Mobile (< md):
+                  - w-full, static, p-6
+                  - right-panel-active -> hidden/block swap logic or z-index swap
+             -->
+            <form action="#" class="bg-white flex flex-col items-center justify-center h-full px-12 text-center text-gray-800">
+                <h1 class="font-bold text-3xl m-0">Sign in</h1>
+                <div class="flex my-5">
                     <a href="#" id="signin-facebook" class="social border border-gray-300 rounded-full inline-flex justify-center items-center mx-1 h-10 w-10 text-gray-700 hover:bg-gray-100 transition"><i class="fab fa-facebook-f"></i></a>
                     <a href="#" id="signin-google" class="social border border-gray-300 rounded-full inline-flex justify-center items-center mx-1 h-10 w-10 text-gray-700 hover:bg-gray-100 transition"><i class="fab fa-google-plus-g"></i></a>
                     <a href="#" class="social border border-gray-300 rounded-full inline-flex justify-center items-center mx-1 h-10 w-10 text-gray-700 hover:bg-gray-100 transition"><i class="fab fa-linkedin-in"></i></a>
@@ -71,38 +80,190 @@
                 <span class="text-xs text-gray-500 mb-4">or use your account</span>
                 <input type="text" id="signin-identifier" placeholder="Email or Username" class="bg-gray-100 border-none p-3 my-2 w-full outline-none rounded-lg" autocomplete="username email" required />
                 <input type="password" id="signin-password" placeholder="Password" class="bg-gray-100 border-none p-3 my-2 w-full outline-none rounded-lg" autocomplete="current-password" required />
-                <a href="reset-password/" class="text-gray-800 text-sm no-underline my-4">Forgot your password?</a>
-                <button id="btn-signin" class="mt-2 rounded-full border border-primary bg-primary text-white text-xs font-bold py-3 px-12 tracking-wider uppercase transition-transform active:scale-95 focus:outline-none">Sign In</button>
-                <div class="mt-4 md:hidden">
+                <a href="/auth/reset-password" id="forgot-password-link" class="text-gray-800 text-sm no-underline my-4 hover:underline">Forgot your password?</a>
+                <button id="btn-signin" class="mt-2 rounded-full border border-primary bg-primary text-white text-xs font-bold py-3 px-12 tracking-wider uppercase transition-transform active:scale-95 focus:outline-none hover:opacity-90">Sign In</button>
+                <div class="mt-4 hidden md:block">
                     <p class="text-xs text-secondary">Don't have an account? <a href="#" id="mobileSignUp" class="text-primary font-bold">Sign Up</a></p>
                 </div>
             </form>
         </div>
 
         <!-- Overlay -->
-        <div class="overlay-container">
-            <div class="overlay">
-                <div class="overlay-panel overlay-left text-white">
+        <div class="absolute top-0 left-1/2 w-1/2 h-full overflow-hidden transition-transform duration-800 ease-in-out z-100 group-[.right-panel-active]:-translate-x-full md:hidden">
+            <div class="bg-linear-to-r from-primary to-purple-500 bg-no-repeat bg-cover text-white relative -left-full h-full w-[200%] transform transition-transform duration-800 ease-in-out group-[.right-panel-active]:translate-x-1/2">
+                <div class="absolute flex items-center justify-center flex-col px-10 text-center top-0 h-full w-1/2 transform translate-x-[-20%] transition-transform duration-800 ease-in-out group-[.right-panel-active]:translate-x-0">
                     <h1 class="font-bold text-3xl m-0 mb-4">Welcome Back!</h1>
                     <p class="text-sm font-thin leading-5 tracking-wide mb-8">To keep connected with us please login</p>
-                    <button class="ghost mt-2 rounded-full border border-white bg-transparent text-white text-xs font-bold py-3 px-12 tracking-wider uppercase transition-transform active:scale-95 focus:outline-none" id="signIn">Sign In</button>
+                    <button class="bg-transparent border border-white text-white rounded-full text-xs font-bold py-3 px-12 tracking-wider uppercase transition-transform active:scale-95 focus:outline-none" id="signIn">Sign In</button>
                 </div>
-                <div class="overlay-panel overlay-right text-white">
+                <div class="absolute right-0 flex items-center justify-center flex-col px-10 text-center top-0 h-full w-1/2 transform translate-x-0 transition-transform duration-800 ease-in-out group-[.right-panel-active]:translate-x-[20%]">
                     <h1 class="font-bold text-3xl m-0 mb-4">Hello, Friend!</h1>
                     <p class="text-sm font-thin leading-5 tracking-wide mb-8">Enter your personal details and start journey with us</p>
-                    <button class="ghost mt-2 rounded-full border border-white bg-transparent text-white text-xs font-bold py-3 px-12 tracking-wider uppercase transition-transform active:scale-95 focus:outline-none" id="signUp">Sign Up</button>
+                    <button class="bg-transparent border border-white text-white rounded-full text-xs font-bold py-3 px-12 tracking-wider uppercase transition-transform active:scale-95 focus:outline-none" id="signUp">Sign Up</button>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- VIEW 2: VERIFY EMAIL -->
+    <div id="view-verify-email" class="auth-view hidden [&.active]:flex flex-col items-center justify-center p-12 text-center relative z-10">
+        <div class="bg-white rounded-2xl shadow-2xl relative overflow-hidden w-full max-w-[500px] p-12 text-center">
+            <div class="mb-6 text-primary text-6xl">
+                <i class="fas fa-envelope-open-text"></i>
+            </div>
+            <h1 class="font-bold text-3xl mb-4 text-gray-800">Verify Your Email</h1>
+            <p class="text-sm text-gray-500 mb-8 max-w-md mx-auto">
+                We've sent a verification link to your email address. Please check your inbox and click the link to activate your account.
+            </p>
+            <button id="btn-back-verify" class="rounded-full border border-primary bg-primary text-white text-xs font-bold py-3 px-12 tracking-wider uppercase transition-transform active:scale-95 focus:outline-none hover:opacity-90">
+                Back to Sign In
+            </button>
+        </div>
+    </div>
+
+    <!-- VIEW 3: RESET PASSWORD REQUEST -->
+    <div id="view-reset-password" class="auth-view hidden [&.active]:flex flex-col items-center justify-center p-12 text-center relative z-10">
+        <div class="bg-white rounded-2xl shadow-2xl relative overflow-hidden w-full max-w-[500px] p-12 text-center">
+            <form id="reset-request-form" class="flex flex-col items-center">
+                <h1 class="font-bold text-3xl mb-4 text-gray-800">Reset Password</h1>
+                <p class="text-xs text-gray-500 mb-6">Enter your email address and we'll send you a link to reset your password.</p>
+                
+                <input type="email" id="reset-email" placeholder="Email" class="bg-gray-100 border-none p-3 my-2 w-full outline-none rounded-lg" required />
+                
+                <button type="submit" id="btn-reset-request" class="mt-4 rounded-full border border-primary bg-primary text-white text-xs font-bold py-3 px-12 tracking-wider uppercase transition-transform active:scale-95 focus:outline-none hover:opacity-90">
+                    Send Reset Link
+                </button>
+                
+                <div class="mt-4">
+                    <button type="button" id="btn-back-reset" class="text-xs text-gray-500 font-bold bg-transparent border-none cursor-pointer hover:text-primary">Back to Sign In</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- VIEW 3.5: UPDATE PASSWORD -->
+    <div id="view-update-password" class="auth-view hidden [&.active]:flex flex-col items-center justify-center p-12 text-center relative z-10">
+        <div class="bg-white rounded-2xl shadow-2xl relative overflow-hidden w-full max-w-[500px] p-12 text-center">
+            <form id="update-password-form" class="flex flex-col items-center">
+                <h1 class="font-bold text-3xl mb-4 text-gray-800">New Password</h1>
+                <p class="text-xs text-gray-500 mb-6">Enter your new password below.</p>
+                
+                <input type="password" id="new-password" placeholder="New Password" class="bg-gray-100 border-none p-3 my-2 w-full outline-none rounded-lg" required />
+                <input type="password" id="confirm-password" placeholder="Confirm Password" class="bg-gray-100 border-none p-3 my-2 w-full outline-none rounded-lg" required />
+                
+                <button type="submit" id="btn-update-password" class="mt-4 rounded-full border border-primary bg-primary text-white text-xs font-bold py-3 px-12 tracking-wider uppercase transition-transform active:scale-95 focus:outline-none hover:opacity-90">
+                    Update Password
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- VIEW 4: ONBOARDING -->
+    <div id="view-onboarding" class="auth-view hidden [&.active]:flex flex-col items-center justify-center w-full z-10">
+        <div class="relative w-full max-w-[550px] h-[580px] z-10">
+            <!-- Radial gradient back -->
+            <div class="absolute inset-0 bg-transparent z-0"></div> 
+            
+            <!-- Step 1: Username -->
+            <div class="absolute top-0 left-0 w-full h-full flex flex-col items-center justify-center p-10 bg-white/95 backdrop-blur-md shadow-2xl rounded-3xl transform translate-x-full opacity-0 transition-all duration-500 ease-in-out [&.active]:translate-x-0 [&.active]:opacity-100" id="step-1">
+                <div class="flex gap-3 mb-8">
+                    <div class="w-8 h-2.5 rounded-full bg-primary transition-all duration-300"></div><div class="w-2.5 h-2.5 rounded-full bg-slate-300"></div><div class="w-2.5 h-2.5 rounded-full bg-slate-300"></div><div class="w-2.5 h-2.5 rounded-full bg-slate-300"></div>
+                </div>
+                <h2 class="text-2xl font-bold mb-2 text-gray-800">What should we call you?</h2>
+                <p class="text-gray-500 text-sm mb-8 text-center">Pick a unique username for your profile.</p>
+
+                <div class="w-full mb-6">
+                    <input type="text" id="ob-username" placeholder="@username" 
+                           class="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-xl outline-none focus:border-primary transition-colors text-lg font-bold text-center text-gray-800" 
+                           autocomplete="off">
+                </div>
+
+                <button id="ob-next-1" class="w-full py-4 bg-primary text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all transform active:scale-95">
+                    Continue <i class="fas fa-arrow-right ml-2 opacity-80"></i>
+                </button>
+            </div>
+
+            <!-- Step 2: Gender -->
+            <div class="absolute top-0 left-0 w-full h-full flex flex-col items-center justify-center p-10 bg-white/95 backdrop-blur-md shadow-2xl rounded-3xl transform translate-x-full opacity-0 transition-all duration-500 ease-in-out [&.active]:translate-x-0 [&.active]:opacity-100" id="step-2">
+                <div class="flex gap-3 mb-8">
+                    <div class="w-2.5 h-2.5 rounded-full bg-slate-300"></div><div class="w-8 h-2.5 rounded-full bg-primary transition-all duration-300"></div><div class="w-2.5 h-2.5 rounded-full bg-slate-300"></div><div class="w-2.5 h-2.5 rounded-full bg-slate-300"></div>
+                </div>
+                <h2 class="text-2xl font-bold mb-2 text-gray-800">How do you identify?</h2>
+                <p class="text-gray-500 text-sm mb-8">This helps us personalize your experience.</p>
+                
+                <div class="w-full flex-1 flex flex-col justify-center gap-3 mb-6">
+                     <button class="btn-option w-full p-4 border rounded-xl hover:bg-gray-100 flex justify-between items-center text-gray-700 font-medium" data-value="male">
+                        <span>Male</span> <i class="fas fa-mars text-blue-500"></i>
+                     </button>
+                     <button class="btn-option w-full p-4 border rounded-xl hover:bg-gray-100 flex justify-between items-center text-gray-700 font-medium" data-value="female">
+                        <span>Female</span> <i class="fas fa-venus text-pink-500"></i>
+                     </button>
+                     <button class="btn-option w-full p-4 border rounded-xl hover:bg-gray-100 flex justify-between items-center text-gray-700 font-medium" data-value="other">
+                        <span>Other / Prefer not to say</span> <i class="fas fa-genderless text-purple-500"></i>
+                     </button>
+                     <input type="hidden" id="ob-gender">
+                </div>
+            </div>
+
+            <!-- Step 3: Avatar (Optional) -->
+            <div class="absolute top-0 left-0 w-full h-full flex flex-col items-center justify-center p-10 bg-white/95 backdrop-blur-md shadow-2xl rounded-3xl transform translate-x-full opacity-0 transition-all duration-500 ease-in-out [&.active]:translate-x-0 [&.active]:opacity-100" id="step-3">
+                <div class="flex gap-3 mb-8">
+                    <div class="w-2.5 h-2.5 rounded-full bg-slate-300"></div><div class="w-2.5 h-2.5 rounded-full bg-slate-300"></div><div class="w-8 h-2.5 rounded-full bg-primary transition-all duration-300"></div><div class="w-2.5 h-2.5 rounded-full bg-slate-300"></div>
+                </div>
+                <h2 class="text-2xl font-bold mb-2 text-gray-800">Show us your smile!</h2>
+                <p class="text-gray-500 text-sm mb-8">Upload a profile picture (Optional)</p>
+                
+                <div class="relative group cursor-pointer mb-8" id="avatar-trigger">
+                    <div class="w-40 h-40 rounded-full overflow-hidden border-4 border-gray-100 bg-gray-50 shadow-md relative mx-auto">
+                        <img id="avatar-preview" src="https://placehold.co/200/e2e8f0/94a3b8?text=+" class="w-full h-full object-cover">
+                    </div>
+                </div>
+                <input type="file" id="avatar-input" accept="image/*" class="hidden">
+
+                <button id="ob-next-3" class="w-full py-4 bg-primary text-white rounded-xl font-bold shadow-lg mb-3 hover:shadow-xl transition-all">
+                    Upload & Continue
+                </button>
+                <button id="ob-skip-3" class="w-full py-3 text-gray-500 font-semibold hover:text-primary transition-colors">
+                    Skip for now
+                </button>
+            </div>
+
+            <!-- Step 4: Password -->
+            <div class="absolute top-0 left-0 w-full h-full flex flex-col items-center justify-center p-10 bg-white/95 backdrop-blur-md shadow-2xl rounded-3xl transform translate-x-full opacity-0 transition-all duration-500 ease-in-out [&.active]:translate-x-0 [&.active]:opacity-100" id="step-4">
+                <div class="flex gap-3 mb-8">
+                    <div class="w-2.5 h-2.5 rounded-full bg-slate-300"></div><div class="w-2.5 h-2.5 rounded-full bg-slate-300"></div><div class="w-2.5 h-2.5 rounded-full bg-slate-300"></div><div class="w-8 h-2.5 rounded-full bg-primary transition-all duration-300"></div>
+                </div>
+                <h2 class="text-2xl font-bold mb-2 text-gray-800">Secure your account</h2>
+                <p class="text-gray-500 text-sm mb-6 text-center">Set a strong password to protect your account.</p>
+
+                <div class="w-full space-y-4 mb-8">
+                    <input type="password" id="ob-password" placeholder="New Password" 
+                           class="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-xl outline-none focus:border-primary transition-colors text-gray-800">
+                    <input type="password" id="ob-confirm-password" placeholder="Confirm Password" 
+                           class="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-xl outline-none focus:border-primary transition-colors text-gray-800">
+                </div>
+
+                <button id="ob-submit" class="w-full py-4 bg-primary text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all transform active:scale-95">
+                    Complete Setup
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+
     <!-- Toast Notifications -->
-    <script src="../js/ui/toast.js"></script>
+    <script src="/js/ui/toast.js"></script>
     <!-- Configuration (API URL) -->
-    <script src="../js/config.js"></script>
-    <!-- Toggle Logic -->
-    <script src="../js/auth.js"></script>
+    <script src="/js/config.js"></script>
+    <!-- Redux -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/redux/4.2.1/redux.min.js"></script>
+    <!-- Redux Store -->
+    <script src="/js/store.js?v=8"></script>
+    <!-- Toggle Logic & Auth Logic -->
+    <script src="/js/auth.js?v=8"></script>
     <!-- Header & Footer Layout -->
-    <script src="../js/ui/layout.js"></script>
+    <script src="/js/ui/layout.js"></script>
+
 </body>
 </html>

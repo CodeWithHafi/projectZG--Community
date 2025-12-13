@@ -6,7 +6,7 @@ create table if not exists public.media (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references public.profiles(id) on delete cascade,
   bucket_name text not null check (bucket_name in ('avatars', 'posts', 'stories')), -- Aligned with StorageBuckets
-  file_path text not null, -- Expected format: user_id/filename usually
+  file_path text not null, -- Expected format: bucket_name/user_id/filename usually
   file_name text not null,
   file_size bigint,
   mime_type text,

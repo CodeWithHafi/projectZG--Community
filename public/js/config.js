@@ -14,7 +14,7 @@ const Config = (function () {
     const isDev = hostname === 'localhost' || hostname === '127.0.0.1';
 
     const API_BASE_URL = isDev
-        ? 'http://localhost:3000'
+        ? '' // Use relative path for same-origin dev environment
         : 'https://project-zg-community.vercel.app';
 
     return {

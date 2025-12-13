@@ -1,12 +1,6 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const signupRoute = require('./routes/auth/signup');
-const loginRoute = require('./routes/auth/login');
-const resetPasswordRoute = require('./routes/auth/reset-password');
-const onboardingRoute = require('./routes/auth/onboarding');
-const googleRoute = require('./routes/auth/google');
-const logoutRoute = require('./routes/auth/logout');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -17,11 +11,27 @@ app.use(cookieParser());
 
 // CORS configuration - restrict to your domain in production
 app.use(cors({
-    origin: process.env.NODE_ENV === 'production'
-        ? process.env.ALLOWED_ORIGIN || 'https://project-zg-community.vercel.app'
-        : '*',
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    origin: (origin, callback) => {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+
+        // In dev, allow any localhost/127.0.0.1
+        if (process.env.NODE_ENV !== 'production') {
+            return callback(null, true);
+        }
+
+        // In prod, check allowlist
+        const allowedOrigins = (process.env.ALLOWED_ORIGINS || process.env.ALLOWED_ORIGIN || '').split(',').map(o => o.trim());
+        if (allowedOrigins.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            console.warn('CORS Blocked Origin:', origin);
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-refresh-token']
 }));
 
 // Content Security Policy
@@ -51,36 +61,26 @@ app.use((req, res, next) => {
 
 app.use(express.json());
 
-// Serve static files from root
 // Serve static files from 'public' directory
 app.use(express.static('public'));
 
 // Serve auth pages with clean URLs
 const path = require('path');
 
-// Reset password pages
-app.get('/reset-password', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public/auth/reset-password/index.html'));
-});
-app.get('/reset-password/update', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public/auth/reset-password/update/index.html'));
-});
+// Auth Pages (catch all auth-related routes and serve the SPA)
+const authPagePath = path.join(__dirname, 'public/auth/index.html');
 
+const authHandler = (req, res) => res.sendFile(authPagePath);
 
-// Auth page
-app.get('/auth', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public/auth/index.html'));
-});
+app.get([
+    '/auth',
+    '/reset-password',
+    '/verify-email',
+    '/onboarding'
+], authHandler);
 
 // API Routes
-app.use('/api/signup', signupRoute);
-app.use('/api/login', loginRoute);
-app.use('/api/auth/google', googleRoute);
-app.use('/api/auth/callback', require('./routes/auth/callback'));
-app.use('/api/auth/me', require('./routes/auth/me'));
-app.use('/api/reset-password', resetPasswordRoute);
-app.use('/api/onboarding', onboardingRoute);
-app.use('/api/logout', logoutRoute);
+app.use('/api/auth', require('./routes/auth/index'));
 
 
 app.listen(PORT, () => {

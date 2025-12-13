@@ -42,17 +42,18 @@
     function createHeader() {
         const page = config.currentPage;
 
+      
         return `
-        <header class="auth-header">
-            <div class="auth-header-inner">
-                <a href="${config.basePath}" class="auth-logo">
-                    <img src="${config.basePath}favicon/icons8-dev-community-color-48.png" alt="ProjectZG Logo">
+        <header class="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100 py-3 px-6 transition-all duration-300 md:px-3 md:py-2">
+            <div class="max-w-7xl mx-auto flex justify-between items-center">
+                <a href="${config.basePath}" class="flex items-center gap-2 no-underline text-primary font-extrabold text-xl transition-opacity duration-200 hover:opacity-80 md:text-base md:gap-1.5">
+                    <img src="${config.basePath}img/ico/icons8-dev-community-color-48.png" alt="ProjectZG Logo" class="w-8 h-8 md:w-6 md:h-6">
                     <span>ProjectZG</span>
                 </a>
-                <nav class="auth-nav">
-                    <a href="${config.basePath}auth/" class="auth-nav-link ${page === 'signin' || page === 'signup' ? 'active' : ''}">Sign In</a>
-                    <a href="${config.basePath}" class="auth-nav-link">Home</a>
-                    <a href="#" class="auth-nav-link">About</a>
+                <nav class="flex items-center gap-6 md:gap-3">
+                    <a href="${config.basePath}auth/" class="text-gray-500 no-underline text-sm font-medium transition-colors duration-200 hover:text-primary focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 md:text-xs ${page === 'signin' || page === 'signup' ? 'text-primary' : ''}">Sign In</a>
+                    <a href="${config.basePath}" class="text-gray-500 no-underline text-sm font-medium transition-colors duration-200 hover:text-primary focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 md:text-xs">Home</a>
+                    <a href="#" class="text-gray-500 no-underline text-sm font-medium transition-colors duration-200 hover:text-primary focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 md:text-xs">About</a>
                 </nav>
             </div>
         </header>
@@ -62,32 +63,32 @@
     // Create Footer HTML
     function createFooter() {
         const year = new Date().getFullYear();
-
+        
         return `
-        <footer class="auth-footer">
-            <div class="auth-footer-inner">
-                <div class="auth-social-links">
-                    <a href="https://github.com/CodeWithHafi" target="_blank" rel="noopener noreferrer" class="auth-social-link" title="GitHub">
+        <footer class="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-t border-gray-100 py-4 px-6 md:py-2 md:px-3 md:border-none">
+            <div class="w-full mx-auto flex flex-col items-center gap-3 md:gap-2">
+                <div class="flex gap-4 md:gap-2">
+                    <a href="https://github.com/CodeWithHafi" target="_blank" rel="noopener noreferrer" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 no-underline transition-all duration-200 hover:bg-primary hover:text-white hover:-translate-y-0.5 md:w-6 md:h-6 md:text-[0.7rem]" title="GitHub">
                         <i class="fab fa-github"></i>
                     </a>
-                    <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" class="auth-social-link" title="Twitter">
+                    <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 no-underline transition-all duration-200 hover:bg-primary hover:text-white hover:-translate-y-0.5 md:w-6 md:h-6 md:text-[0.7rem]" title="Twitter">
                         <i class="fab fa-twitter"></i>
                     </a>
-                    <a href="https://discord.com" target="_blank" rel="noopener noreferrer" class="auth-social-link" title="Discord">
+                    <a href="https://discord.com" target="_blank" rel="noopener noreferrer" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 no-underline transition-all duration-200 hover:bg-primary hover:text-white hover:-translate-y-0.5 md:w-6 md:h-6 md:text-[0.7rem]" title="Discord">
                         <i class="fab fa-discord"></i>
                     </a>
-                    <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" class="auth-social-link" title="LinkedIn">
+                    <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 no-underline transition-all duration-200 hover:bg-primary hover:text-white hover:-translate-y-0.5 md:w-6 md:h-6 md:text-[0.7rem]" title="LinkedIn">
                         <i class="fab fa-linkedin-in"></i>
                     </a>
                 </div>
-                <div class="auth-footer-links">
-                    <a href="#" class="auth-footer-link">Privacy Policy</a>
-                    <a href="#" class="auth-footer-link">Terms of Service</a>
-                    <a href="#" class="auth-footer-link">Community Guidelines</a>
-                    <a href="#" class="auth-footer-link">Help & Support</a>
-                    <a href="#" class="auth-footer-link">Contact Us</a>
+                <div class="flex flex-wrap justify-center gap-4 md:gap-2">
+                    <a href="#" class="text-gray-500 no-underline text-xs transition-colors duration-200 hover:text-primary md:text-[0.6rem]">Privacy Policy</a>
+                    <a href="#" class="text-gray-500 no-underline text-xs transition-colors duration-200 hover:text-primary md:text-[0.6rem]">Terms of Service</a>
+                    <a href="#" class="text-gray-500 no-underline text-xs transition-colors duration-200 hover:text-primary md:text-[0.6rem]">Community Guidelines</a>
+                    <a href="#" class="text-gray-500 no-underline text-xs transition-colors duration-200 hover:text-primary md:text-[0.6rem]">Help & Support</a>
+                    <a href="#" class="text-gray-500 no-underline text-xs transition-colors duration-200 hover:text-primary md:text-[0.6rem]">Contact Us</a>
                 </div>
-                <p class="auth-footer-copyright">© ${year} ProjectZG. All rights reserved.</p>
+                <p class="text-gray-400 text-[0.7rem] text-center md:text-[0.6rem] md:mt-1">© ${year} ProjectZG. All rights reserved.</p>
             </div>
         </footer>
         `;
