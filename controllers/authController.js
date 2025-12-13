@@ -160,6 +160,11 @@ const googleAuth = async (req, res) => {
             throw new Error('ALLOWED_ORIGIN or ALLOWED_ORIGINS environment variable must be set');
         }
 
+        if (!supabase) {
+            console.error('Supabase client is not initialized. Check server environment variables.');
+            return res.status(500).json({ error: 'Database connection unavailable' });
+        }
+
         const { data, error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
             options: {
