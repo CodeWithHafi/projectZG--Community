@@ -26,15 +26,15 @@
         body { font-family: 'Montserrat', sans-serif; }
     </style>
 </head>
-<body class="bg-gray-900 text-white flex justify-center items-center flex-col h-screen relative pt-20 pb-40 md:pt-0 md:pb-0 overflow-hidden">
+<body class="bg-gray-900 text-white flex flex-col min-h-screen relative pt-20 pb-0 md:justify-center md:items-center md:pt-0 md:pb-0 overflow-y-auto md:overflow-hidden">
 
     <!-- Gradient Overlay Background -->
     <div class="absolute inset-0 z-0 bg-linear-to-br from-[#1a1a2e] via-[#16213e] to-[#0f3460]"></div>
 
-    <div id="toast-container" class="toast-container"></div>
+    <div id="toast-container" class="toast-container fixed z-9999 flex gap-2.5 pointer-events-none w-auto left-5 right-5 bottom-5 flex-col justify-end md:top-20 md:right-5 md:left-auto md:bottom-auto md:w-[420px] md:flex-col"></div>
 
     <!-- VIEW 1: LOGIN / SIGNUP (Main Auth Container) -->
-    <div id="view-auth" class="auth-view active group hidden [&.active]:flex relative overflow-hidden w-full max-w-[768px] min-h-[480px] bg-white rounded-2xl shadow-2xl z-10 md:w-full md:max-w-full md:min-h-screen md:rounded-none md:shadow-none md:m-0">
+    <div id="view-auth" class="auth-view active group hidden [&.active]:flex relative overflow-hidden w-full max-w-[768px] min-h-[480px] bg-white rounded-2xl shadow-2xl z-10 mx-auto my-auto mb-8 md:w-full md:max-w-full md:min-h-screen md:rounded-none md:shadow-none md:m-0">
         
         <!-- Sign Up Form -->
         <div class="absolute top-0 h-full left-0 w-full opacity-0 z-0 transition-all duration-500 ease-in-out group-[.right-panel-active]:opacity-100 group-[.right-panel-active]:z-20 md:w-1/2 md:opacity-0 md:z-10 md:group-[.right-panel-active]:translate-x-full md:group-[.right-panel-active]:opacity-100 md:group-[.right-panel-active]:z-50 md:group-[.right-panel-active]:animate-show">

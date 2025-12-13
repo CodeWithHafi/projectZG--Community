@@ -14,9 +14,10 @@ const Toast = {
         if (!this.container) {
             this.container = document.createElement('div');
             this.container.id = 'toast-container';
-            this.container.className = 'fixed top-5 right-5 z-[9999] flex flex-col gap-2.5 max-w-[420px] md:top-2.5 md:left-2.5 md:right-2.5';
             document.body.appendChild(this.container);
         }
+        // Ensure styles are always applied
+        this.container.className = 'fixed z-[9999] flex gap-2.5 pointer-events-none w-auto left-5 right-5 bottom-5 flex-col justify-end md:top-20 md:right-5 md:left-auto md:bottom-auto md:w-[420px] md:flex-col';
     },
 
     show(options) {
@@ -41,7 +42,7 @@ const Toast = {
         };
 
         const toast = document.createElement('div');
-        toast.className = `flex items-center gap-3 p-4 px-5 rounded-xl bg-white shadow-xl ring-1 ring-black/5 min-w-[320px] max-w-[420px] translate-x-[120%] opacity-0 animate-[toastSlideIn_0.5s_cubic-bezier(0.68,-0.55,0.265,1.55)_forwards] relative overflow-hidden`;
+        toast.className = `flex items-center gap-3 p-4 px-5 rounded-xl bg-white shadow-xl ring-1 ring-black/5 min-w-[320px] max-w-[420px] relative overflow-hidden pointer-events-auto toast-enter`;
 
         const icon = document.createElement('div');
         icon.className = `w-10 h-10 rounded-full flex items-center justify-center shrink-0 text-white ${typeStyles[type]}`;
@@ -85,8 +86,8 @@ const Toast = {
     close(toast) {
         if (toast && !toast.getAttribute('data-closing')) {
             toast.setAttribute('data-closing', 'true');
-            toast.classList.remove('animate-[toastSlideIn_0.5s_cubic-bezier(0.68,-0.55,0.265,1.55)_forwards]');
-            toast.classList.add('animate-[toastSlideOut_0.4s_cubic-bezier(0.68,-0.55,0.265,1.55)_forwards]');
+            toast.classList.remove('toast-enter');
+            toast.classList.add('toast-exit');
 
             setTimeout(() => toast.remove(), 400);
         }

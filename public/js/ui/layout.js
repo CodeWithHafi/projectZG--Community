@@ -65,7 +65,7 @@
         const year = new Date().getFullYear();
 
         return `
-        <footer class="fixed bottom-0 left-0 right-0 w-full z-50 bg-white/95 backdrop-blur-md border-t border-gray-100 py-2 px-6 md:py-2 md:px-3 md:border-none">
+        <footer class="relative w-full z-50 bg-white/95 backdrop-blur-md border-t border-gray-100 py-2 px-6 mt-auto md:fixed md:bottom-0 md:left-0 md:right-0 md:border-none md:mt-0">
             <div class="w-full mx-auto flex flex-col items-center gap-3 md:gap-2">
                 <div class="flex gap-4 md:gap-2">
                     <a href="https://github.com/CodeWithHafi" target="_blank" rel="noopener noreferrer" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 no-underline transition-all duration-200 hover:bg-primary hover:text-white hover:-translate-y-0.5 md:w-6 md:h-6 md:text-[0.7rem]" title="GitHub">
