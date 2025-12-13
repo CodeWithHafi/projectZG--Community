@@ -112,11 +112,26 @@ app.get('/api/debug-paths', (req, res) => {
     });
 });
 
+// Health Check 
+app.get('/api/health', (req, res) => {
+    res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
 try {
     app.use('/api/auth', require('./api/auth/index'));
 } catch (error) {
     console.error('Failed to load Auth API:', error);
 }
+
+// Global Error Handler - CRITICAL for Vercel debugging
+app.use((err, req, res, next) => {
+    console.error('Unhandled Application Error:', err);
+    res.status(500).json({
+        error: 'Internal Server Error',
+        message: err.message,
+        stack: process.env.NODE_ENV === 'production' ? '🥞' : err.stack
+    });
+});
 
 
 // Only listen if run directly (local dev), otherwise export for Vercel
