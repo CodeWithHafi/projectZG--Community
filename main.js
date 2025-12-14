@@ -81,8 +81,6 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(process.cwd(), 'public/index.html'));
 });
 
-// Serve auth pages with clean URLs
-
 // Auth Pages (catch all auth-related routes and serve the SPA)
 const authPagePath = path.join(process.cwd(), 'public/auth/index.html');
 
@@ -98,6 +96,26 @@ app.get([
 // API Routes
 app.use('/api/auth', require('./api/auth/index'));
 app.use('/api', require('./api/profile/index'));
+
+// 500 Handler
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    if (req.path.startsWith('/api')) {
+        return res.status(500).json({ error: 'Internal Server Error' });
+    }
+    res.status(500).redirect('/error/?code=500');
+});
+
+// 404 Handler - For any other route not matched above
+app.use((req, res, next) => {
+    // If it's an API request, return JSON
+    if (req.path.startsWith('/api')) {
+        return res.status(404).json({ error: 'Endpoint not found' });
+    }
+
+    // Otherwise serve the error page
+    res.status(404).sendFile(path.join(process.cwd(), 'public/error/index.html'));
+});
 
 
 // Only listen if run directly (local dev), otherwise export for Vercel

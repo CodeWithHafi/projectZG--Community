@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error - ProjectZG</title>
+    
+    <!-- Favicons -->
+    <link rel="icon" type="image/png" sizes="16x16" href="/img/ico/icons8-dev-community-color-16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/img/ico/icons8-dev-community-color-32.png">
+    <link rel="icon" type="image/png" sizes="48x48" href="/img/ico/icons8-dev-community-color-48.png">
+    
+    <!-- Load Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Hybrid Styling: Reuse Global CSS -->
+    <link rel="stylesheet" href="/css/dist/global.css">
+    
+    <style>
+        /* --- Layout & Background --- */
+        body { overflow: hidden; perspective: 1000px; }
+        
+        /* Gradient Animation for Background */
+        .bg-animate {
+            background-size: 400% 400%;
+            animation: bg-shift 15s ease infinite;
+        }
+        @keyframes bg-shift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* --- 404: Magnifying Glass --- */
+        #magnifying-container {
+            position: relative;
+            width: 400px;
+            height: 400px;
+            display: none; 
+            overflow: hidden; 
+            margin: auto; 
+            border-radius: 20px;
+        }
+        .desktop-only-anim {
+            display: none !important;
+        }
+        @media (min-width: 768px) {
+            .desktop-only-anim {
+                display: block !important;
+            }
+        }
+
+        .random-code-bg {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 11px;
+            line-height: 14px;
+            color: rgba(var(--color-text-secondary-rgb), 0.2);
+            position: absolute;
+            inset: -50px; 
+            white-space: pre-wrap;
+            word-break: break-all;
+            user-select: none;
+            text-align: left;
+            mask-image: radial-gradient(circle at center, black 0%, transparent 80%);
+        }
+
+        .lens {
+            position: absolute;
+            width: 140px; 
+            height: 140px;
+            border: 4px solid var(--color-primary);
+            border-radius: 50%;
+            background: rgba(var(--color-surface-rgb), 0.95);
+            box-shadow: 
+                0 0 0 4px rgba(0,0,0,0.1),
+                0 20px 50px rgba(0,0,0,0.3),
+                inset 0 0 20px rgba(255,255,255,0.2);
+            overflow: hidden;
+            z-index: 20;
+            backdrop-filter: blur(2px);
+            top: 0; left: 0;
+            will-change: transform;
+        }
+        
+        .lens-content {
+            position: absolute;
+            width: 2000px; 
+            height: 2000px;
+            top: 0; 
+            left: 0;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 28px; 
+            line-height: 35px;
+            color: var(--color-primary);
+            font-weight: 800;
+            white-space: pre-wrap;
+            word-break: break-all;
+            text-shadow: 0 0 2px rgba(var(--color-primary-rgb), 0.3);
+            transform-origin: 0 0;
+            will-change: transform;
+        }
+        
+        .lens-handle {
+            position: absolute;
+            bottom: -25px;
+            right: -25px;
+            width: 60px;
+            height: 18px;
+            background: linear-gradient(45deg, #333, #666);
+            transform: rotate(45deg);
+            border-radius: 20px;
+            z-index: 19;
+            box-shadow: 2px 5px 10px rgba(0,0,0,0.2);
+        }
+
+        /* --- 500: Real Realistic Lightning --- */
+        #server-crash-container {
+            position: relative;
+            width: 350px;
+            height: 350px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            margin: auto;
+        }
+        
+        /*  Bolt */
+        .lightning-svg {
+            position: absolute;
+            top: -60px;
+            left: 50%; 
+            width: 150px;
+            height: 400px;
+            transform: translateX(-50%);
+            z-index: 5; 
+            overflow: visible;
+            pointer-events: none;
+        }
+        
+        .lightning-path {
+            stroke: #fbbf24; 
+            stroke-width: 3;
+            fill: none;
+            filter: drop-shadow(0 0 5px #fbbf24) drop-shadow(0 0 15px #f59e0b);
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            opacity: 0;
+        }
+
+        /* Server Box */
+        .server-container {
+            position: relative;
+            z-index: 10; 
+        }
+
+        /* Server Crash State */
+        .crash-active .server-icon {
+            color: #ef4444 !important; 
+            filter: drop-shadow(0 0 15px rgba(239, 68, 68, 0.6));
+            animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both infinite;
+        }
+        .crash-active .server-box {
+            border-color: #ef4444 !important;
+            background-color: rgba(239, 68, 68, 0.1);
+            box-shadow: 0 0 40px rgba(239, 68, 68, 0.3);
+        }
+
+        @keyframes bolt-flash {
+            0% { opacity: 0; stroke-dasharray: 0 1000; }
+            5% { opacity: 1; stroke-dasharray: 1000 0; }
+            20% { opacity: 1; }
+            40% { opacity: 0; }
+            100% { opacity: 0; }
+        }
+
+        /* Sparks */
+        .spark {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #fbbf24;
+            border-radius: 50%;
+            opacity: 0;
+            z-index: 15; 
+        }
+
+        /* --- General Animations --- */
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-slide-up { animation: slideUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; opacity: 0; }
+        .delay-100 { animation-delay: 0.1s; }
+        .delay-200 { animation-delay: 0.2s; }
+        .delay-300 { animation-delay: 0.3s; }
+
+    </style>
+</head>
+<body data-theme="light" class="bg-animate bg-linear-to-br from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white min-h-screen relative overflow-hidden flex items-center justify-center font-sans selection:bg-primary selection:text-white">
+    
+    <!-- Ambient Fill -->
+    <div class="fixed inset-0 bg-bg/90 -z-10 transition-colors duration-500"></div>
+
+    <div class="container mx-auto px-6 h-full min-h-screen flex items-center justify-center">
+        
+        <div class="w-full max-w-7xl grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
+            
+            <!-- LEFT: Animations (Hidden on Mobile) -->
+            <div class="hidden md:flex justify-end items-center relative order-2 md:order-1 animate-slide-up h-[450px]">
+                
+                <!-- 404 Animation Container -->
+                <div id="magnifying-container">
+                    <div class="random-code-bg" id="bg-code"></div>
+                    <div class="lens" id="lens">
+                        <div class="lens-content" id="lens-text"></div>
+                        <div class="lens-handle" id="lens-handle"></div>
+                    </div>
+                </div>
+
+                <!-- 500 Animation Container -->
+                <div id="server-crash-container">
+                    <!-- Bolt -->
+                    <svg class="lightning-svg" id="lightning-bolt" viewBox="0 0 100 300">
+                        <path class="lightning-path" d="M50 0 L40 80 L70 100 L30 180 L60 200 L40 300" />
+                    </svg>
+                    
+                    <!-- Server Rack -->
+                    <div class="server-container p-8 rounded-3xl bg-surface/50 border border-white/10 shadow-2xl backdrop-blur-sm transition-all duration-200 server-box" id="server-box">
+                         <i data-lucide="server" class="w-40 h-40 text-gray-300 transition-all duration-100 server-icon" id="server-icon"></i>
+                    </div>
+                    
+                    <div id="sparks-container" class="absolute inset-0 pointer-events-none"></div>
+                </div>
+
+                <!-- Fallback Icon -->
+                <div id="default-icon-container" class="hidden">
+                     <i id="error-icon-fallback" data-lucide="alert-circle" class="w-48 h-48 text-primary drop-shadow-[0_0_15px_rgba(var(--color-primary-rgb),0.5)]"></i>
+                </div>
+
+            </div>
+
+            <!-- RIGHT: Text Content (Centered on Mobile) -->
+            <div class="text-center md:text-left space-y-6 order-1 md:order-2 md:pl-8 w-full">
+                
+                <div class="animate-slide-up delay-100">
+                    <span id="error-code-bg" class="hidden md:block absolute -top-20 -left-20 text-[200px] font-black opacity-[0.03] select-none pointer-events-none">
+                        <!-- Code injected -->
+                    </span>
+                    
+                    <div class="inline-flex items-center px-4 py-2 rounded-full bg-primary/10 text-primary font-bold text-sm tracking-widest uppercase mb-6 border border-primary/20 backdrop-blur-md shadow-lg shadow-primary/5">
+                        <span class="w-2 h-2 rounded-full bg-primary mr-2 animate-pulse"></span>
+                        Error <span id="error-code-small" class="ml-1">...</span>
+                    </div>
+                    
+                    <h1 id="error-title" class="text-6xl md:text-8xl font-black text-main leading-[0.9] tracking-tighter mb-4 drop-shadow-sm">
+                        Loading...
+                    </h1>
+                </div>
+                
+                <p id="error-message" class="text-xl md:text-2xl text-secondary leading-relaxed max-w-lg mx-auto md:mx-0 animate-slide-up delay-200 font-light">
+                   Analysing request parameters...
+                </p>
+
+                <!-- Buttons -->
+                <div class="flex flex-wrap justify-center md:justify-start gap-4 pt-4 animate-slide-up delay-300">
+                    <a href="/" class="group relative px-8 py-4 bg-primary text-white font-bold rounded-xl overflow-hidden shadow-lg shadow-primary/30 hover:shadow-primary/50 transition-all duration-300 transform hover:-translate-y-1">
+                        <!-- Fix for lint ID: 3053817a: bg-linear-to-r -->
+                        <div class="absolute inset-0 w-full h-full bg-linear-to-r from-transparent via-white/20 to-transparent transform -translate-x-full group-hover:animate-[shimmer_1s_infinite]"></div>
+                        <span class="relative flex items-center">
+                            <i data-lucide="home" class="w-5 h-5 mr-2"></i>
+                            Back Home
+                        </span>
+                    </a>
+                    
+                    <button onclick="window.history.back()" class="px-8 py-4 border-2 border-app text-main font-bold rounded-xl hover:bg-hover-bg hover:border-primary/50 transition-all duration-300 flex items-center group">
+                        <i data-lucide="arrow-left" class="w-5 h-5 mr-2 group-hover:-translate-x-1 transition-transform"></i>
+                        Go Back
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Theme Toggle -->
+    <button onclick="toggleTheme()" class="fixed bottom-8 right-8 p-4 rounded-full bg-surface shadow-2xl text-secondary hover:text-primary transition-all duration-300 hover:scale-110 z-50 border border-app group">
+        <i data-lucide="sun-moon" id="theme-icon" class="w-6 h-6 group-hover:rotate-12 transition-transform"></i>
+    </button>
+    
+    <!-- Full Screen Lightning Overlay -->
+    <svg id="fullscreen-lightning" class="fixed inset-0 w-full h-full pointer-events-none z-100" style="display:none;">
+        <path id="fs-bolt-path" d="" fill="none" stroke="#fbbf24" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" style="filter: drop-shadow(0 0 10px #fbbf24) drop-shadow(0 0 30px #f59e0b); opacity: 0;"></path>
+    </svg>
+
+    <script>
+        // --- Theme Logic ---
+        function getInitialTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) return savedTheme;
+            return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+        function setTheme(theme) {
+            document.body.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+            lucide.createIcons();
+        }
+        function toggleTheme() {
+            const currentTheme = document.body.getAttribute('data-theme');
+            setTheme(currentTheme === 'light' ? 'dark' : 'light');
+        }
+
+        // --- Animations ---
+        
+        // 404: Lens Effect
+        function initLensAnimation() {
+            const container = document.getElementById('magnifying-container');
+            container.style.display = 'block';
+            
+            const bg = document.getElementById('bg-code');
+            const layer = document.getElementById('lens-text');
+            const lens = document.getElementById('lens');
+            
+            // Generate Dense Random Code
+            const snippets = [
+                "const notFound=true;", "if(page===null)panic();", "return 404;",
+                "void main(){segfault;}", "undefined is not a function",
+                "Stack Overflow...", "Guru Meditation", "Fatal Exception 0E",
+                "System.exit(1);", "404 404 404", "import {void} from 'abyss';",
+                "Segmentation fault (core dumped)", "IndexOutOfBoundsException"
+            ];
+            let text = "";
+            for(let i=0; i<150; i++) {
+                text += snippets[Math.floor(Math.random() * snippets.length)] + " ";
+            }
+            bg.innerText = text;
+            layer.innerText = text;
+
+            // Animate Lens
+            const M = 2.55;
+            const lensSize = 140; 
+            const offset = (lensSize / 2) * (1 - M); 
+
+            let x = 100, y = 100; // Start inside
+            let dx = 1.5, dy = 1.2;
+            
+            function animate() {
+                // If container is hidden (mobile), skip animation logic
+                if (container.offsetWidth === 0) {
+                    requestAnimationFrame(animate); 
+                    return;
+                }
+
+                const w = container.offsetWidth;
+                const h = container.offsetHeight;
+                
+                // Bounds Checking
+                if (x + lensSize > w || x < 0) dx = -dx;
+                if (y + lensSize > h || y < 0) dy = -dy;
+                
+                x += dx;
+                y += dy;
+
+                lens.style.transform = `translate(${x}px, ${y}px)`;
+                
+                // Inverse translate formula
+                const tx = offset - (x * M);
+                const ty = offset - (y * M);
+                
+                layer.style.transform = `translate(${tx}px, ${ty}px)`; 
+                
+                requestAnimationFrame(animate);
+            }
+            animate();
+        }
+
+        // 500: Full Screen Random Lightning
+        function initServerAnimation() {
+            const container = document.getElementById('server-crash-container');
+            container.style.display = 'flex'; 
+            
+            // Hide local bolt, use full screen layover
+            document.getElementById('lightning-bolt').style.display = 'none';
+            const fsOverlay = document.getElementById('fullscreen-lightning');
+            fsOverlay.style.display = 'block';
+            const boltPath = document.getElementById('fs-bolt-path');
+
+            // Random sparks on server
+            function createSpark() {
+                const spark = document.createElement('div');
+                spark.className = 'spark';
+                spark.style.left = '50%';
+                spark.style.top = '50%';
+                const angle = Math.random() * Math.PI * 2;
+                const velocity = 80 + Math.random() * 80;
+                const tx = Math.cos(angle) * velocity;
+                const ty = Math.sin(angle) * velocity;
+                
+                spark.animate([
+                    { transform: 'translate(0, 0) scale(1)', opacity: 1 },
+                    { transform: `translate(${tx}px, ${ty}px) scale(0)`, opacity: 0 }
+                ], { duration: 300 + Math.random() * 300, easing: 'ease-out' });
+                
+                document.getElementById('sparks-container').appendChild(spark);
+                setTimeout(() => spark.remove(), 600);
+            }
+
+            function generateBoltPath(startX, startY, endX, endY) {
+                // Simple jagged line generator
+                let path = `M ${startX} ${startY}`;
+                let currX = startX;
+                let currY = startY;
+                const steps = 10;
+                const dx = (endX - startX) / steps;
+                const dy = (endY - startY) / steps;
+                
+                for(let i=1; i<steps; i++) {
+                    const jagged = (Math.random() - 0.5) * 40; // Jaggedness
+                    currX += dx;
+                    currY += dy;
+                    path += ` L ${currX + jagged} ${currY + jagged}`;
+                }
+                path += ` L ${endX} ${endY}`;
+                return path;
+            }
+
+            function strike() {
+                const w = window.innerWidth;
+                const h = window.innerHeight;
+                
+                // Target: Server Icon Center
+                const serverRect = document.getElementById('server-icon').getBoundingClientRect();
+                const targetX = serverRect.left + serverRect.width / 2;
+                const targetY = serverRect.top + serverRect.height / 2;
+
+                // Origin: Random Edge
+                const edge = Math.floor(Math.random() * 3); // 0: Top, 1: Left, 2: Right
+                let startX, startY;
+                
+                if (edge === 0) { // Top
+                    startX = Math.random() * w;
+                    startY = -50;
+                } else if (edge === 1) { // Left
+                    startX = -50;
+                    startY = Math.random() * h * 0.5; // Top half
+                } else { // Right
+                    startX = w + 50;
+                    startY = Math.random() * h * 0.5; // Top half
+                }
+
+                boltPath.setAttribute('d', generateBoltPath(startX, startY, targetX, targetY));
+                
+                // Flash animation
+                boltPath.animate([
+                    { opacity: 0, strokeDasharray: "0 1000" },
+                    { opacity: 1, strokeDasharray: "1000 0", offset: 0.1 },
+                    { opacity: 1, offset: 0.3 },
+                    { opacity: 0 }
+                ], { duration: 400, easing: 'ease-out' });
+
+                // Impact
+                setTimeout(() => {
+                    container.classList.add('crash-active');
+                    for(let i=0; i<16; i++) createSpark();
+                    
+                    // Screen flash
+                    const flash = document.createElement('div');
+                    flash.className = 'fixed inset-0 bg-white/20 z-[90] pointer-events-none';
+                    document.body.appendChild(flash);
+                    flash.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 150 }).onfinish = () => flash.remove();
+
+                }, 50);
+
+                setTimeout(() => container.classList.remove('crash-active'), 600);
+                setTimeout(strike, 1500 + Math.random() * 2500);
+            }
+            
+            setTimeout(strike, 1000);
+        }
+
+        // Default Icon Fallback
+        function initDefaultIcon(iconName) {
+            document.getElementById('default-icon-container').classList.remove('hidden');
+            document.getElementById('error-icon-fallback').setAttribute('data-lucide', iconName);
+        }
+
+        // --- Init ---
+        document.addEventListener('DOMContentLoaded', () => {
+            setTheme(getInitialTheme());
+            
+            const urlParams = new URLSearchParams(window.location.search);
+            const code = urlParams.get('code') || '404';
+            
+            const config = {
+                '400': { title: 'Bad Request', msg: 'Invalid request syntax or parameters.', icon: 'file-warning' },
+                '401': { title: 'Unauthorized', msg: 'Please log in to continue.', icon: 'lock' },
+                '403': { title: 'Forbidden', msg: 'You do not have permission.', icon: 'shield-alert' },
+                '404': { title: 'Page Not Found', msg: 'We searched everywhere, but this page is missing.', animation: 'lens' },
+                '500': { title: 'Server Error', msg: 'Our servers were struck by lightning. Fixing it now!', animation: 'server' },
+                '503': { title: 'Maintenance', msg: 'Scheduled maintenance in progress.', icon: 'hammer' },
+                'default': { title: 'Error', msg: 'An unexpected error has occurred.', icon: 'alert-triangle' }
+            };
+
+            const data = config[code] || config['default'];
+            const displayCode = config[code] ? code : 'Err';
+
+            document.getElementById('error-code-small').textContent = displayCode;
+            document.getElementById('error-code-bg').textContent = displayCode;
+            document.getElementById('error-title').textContent = data.title;
+            document.getElementById('error-message').textContent = data.msg;
+            document.title = `${displayCode}: ${data.title} - ProjectZG`;
+            
+            // Auto Redirect
+            let timeLeft = 10;
+            const msgEl = document.getElementById('error-message');
+            const originalMsg = data.msg;
+            
+            const timer = setInterval(() => {
+                msgEl.innerHTML = `${originalMsg}<br><br><span class="text-sm font-bold text-primary animate-pulse">Redirecting home in ${timeLeft}s...</span>`;
+                timeLeft--;
+                if (timeLeft < 0) {
+                    clearInterval(timer);
+                    window.location.href = '/';
+                }
+            }, 1000);
+            // Initial call
+            msgEl.innerHTML = `${originalMsg}<br><br><span class="text-sm font-bold text-primary animate-pulse">Redirecting home in ${timeLeft}s...</span>`;
+
+            if (data.animation === 'lens') {
+                initLensAnimation();
+            } else if (data.animation === 'server') {
+                initServerAnimation();
+            } else {
+                initDefaultIcon(data.icon || 'alert-triangle');
+            }
+            
+            lucide.createIcons();
+        });
+    </script>
+</body>
+</html>

@@ -146,7 +146,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         // Double check we aren't supposed to be onboarding based on URL
                         const search = new URLSearchParams(window.location.search);
                         if (search.get('onboarding') !== 'true') {
-                            window.location.href = '/';
+                            const redirectTarget = search.get('redirect');
+                            window.location.href = redirectTarget ? decodeURIComponent(redirectTarget) : '/';
                         }
                     }
                 }
@@ -244,11 +245,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (data.session) {
                     localStorage.setItem('sb-access-token', data.session.access_token);
                     localStorage.setItem('sb-refresh-token', data.session.refresh_token);
+
+                    // Set cookies for app-init.js
+                    document.cookie = `sb-access-token=${data.session.access_token}; path=/; max-age=3600; SameSite=Lax`;
+                    document.cookie = `sb-refresh-token=${data.session.refresh_token}; path=/; max-age=2592000; SameSite=Lax`;
                 }
 
                 store.dispatch(Actions.setUser(data.user));
                 showToast('success', "Welcome back!", "Signed In");
-                setTimeout(() => window.location.href = '/', 1000);
+
+                // Redirect logic
+                const search = new URLSearchParams(window.location.search);
+                const redirectTarget = search.get('redirect');
+                const target = redirectTarget ? decodeURIComponent(redirectTarget) : '/';
+
+                setTimeout(() => window.location.href = target, 1000);
             } catch (err) {
                 showToast('error', err.message, "Login Failed");
             }
