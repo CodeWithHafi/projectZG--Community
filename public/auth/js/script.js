@@ -259,7 +259,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const redirectTarget = search.get('redirect');
                 const target = redirectTarget ? decodeURIComponent(redirectTarget) : '/';
 
-                setTimeout(() => window.location.href = target, 1000);
+                window.location.href = target;
             } catch (err) {
                 showToast('error', err.message, "Login Failed");
             }
@@ -386,7 +386,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 showToast('success', "Profile Ready!", "Welcome");
-                setTimeout(() => window.location.href = '/', 1500);
+                window.location.href = '/';
             } catch (err) {
                 showToast('error', err.message, "Error");
                 obSubmit.innerHTML = 'Complete Setup';

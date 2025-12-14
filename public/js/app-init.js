@@ -72,32 +72,8 @@
                 const urlParams = new URLSearchParams(window.location.search);
                 const redirectTarget = urlParams.get('redirect') || '/';
 
-                // Show visual feedback
-                const toast = document.createElement('div');
-                toast.className = 'fixed top-16 md:top-4 right-4 left-4 md:left-auto bg-green-500 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 z-[9999] animate-bounce-in';
-
-                let countdown = 3;
-                toast.innerHTML = `
-                    <i data-lucide="check-circle" class="w-6 h-6"></i>
-                    <div>
-                        <p class="font-bold text-lg">Already Logged In</p>
-                        <p class="text-sm font-medium">Redirecting in <span id="redirect-countdown">${countdown}</span></p>
-                    </div>
-                `;
-                document.body.appendChild(toast);
-                if (window.lucide) lucide.createIcons();
-
-                // Live Countdown
-                const interval = setInterval(() => {
-                    countdown--;
-                    const countSpan = document.getElementById('redirect-countdown');
-                    if (countSpan) countSpan.textContent = countdown;
-
-                    if (countdown <= 0) {
-                        clearInterval(interval);
-                        window.location.href = redirectTarget;
-                    }
-                }, 1000);
+                // Redirect immediately if already logged in
+                window.location.href = redirectTarget;
             }
         }
     } catch (e) {

@@ -788,8 +788,35 @@ function hideModal(modalId) {
 
 // --- Logout Handler ---
 async function handleLogout() {
+    try {
+        // 1. Call API to clear server cookies
+        await fetch(`${API_URL}/auth/logout`, { method: 'POST' });
+    } catch (e) {
+        console.warn("Logout API failed", e);
+    }
+
+    // 2. Clear Local Storage
     localStorage.removeItem('sb-access-token');
-    window.location.href = '/auth/';
+
+    // 3. Reset User State
+    currentUser = null;
+
+    // 4. Update UI to Guest Mode
+    updateUserContext({}); // Clear user info in modals
+    if (typeof Toast !== 'undefined') Toast.success("Logged out successfully");
+
+    // 5. Refresh Feed/View (Go to home if on a protected route like notifications)
+    if (currentPage === 'notifications' || currentPage === 'profile') {
+        changeView('feed');
+    } else {
+        // Just re-fetch feed to ensure buttons update (Like -> Login Modal)
+        fetchFeed();
+    }
+
+    // Re-render current view or home
+    // Ideally we trigger a full UI refresh or page reload if we want to be 100% clean,
+    // but for SPA feel:
+    window.location.reload();
 }
 
 // --- Initialization ---
@@ -825,7 +852,7 @@ async function fetchNotifications() {
 
 function renderNotifications(notifications) {
     const list = document.getElementById('notification-list');
-    if (!list) return; // Might be in another view template
+    if (!list) return;
 
     // If we have a dedicated notifications view container, render there
     // For this app, let's assume 'notificationsView' has a container
@@ -876,8 +903,6 @@ function renderNotifications(notifications) {
 function subscribeToNotifications() {
     if (!currentUser) return;
 
-    // Ensure Supabase client is available globally (from script tag or module)
-    // Assuming 'supabase' is available from @supabase/supabase-js CDN or similar in window
     if (typeof supabase === 'undefined') {
         console.warn('Supabase client not found for Realtime');
         return;
@@ -910,6 +935,150 @@ function subscribeToNotifications() {
         .subscribe();
 }
 
+// --- Cookie Consent Logic ---
+function initCookieConsent() {
+    // Check if already consented
+    if (localStorage.getItem('cookie_consent') === 'true') return;
+
+    // Create Styles
+    const style = document.createElement('style');
+    style.innerHTML = `
+        .cookie-consent-overlay {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(150%);
+            width: 90%;
+            max-width: 500px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            z-index: 99999;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+            font-family: 'Inter', sans-serif;
+            color: #fff; /* Default to white for contrast on glass */
+        }
+        
+        /* Dark/Light mode adaptation */
+        [data-theme="light"] .cookie-consent-overlay {
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(0,0,0,0.05);
+            color: #1e293b;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        .cookie-consent-overlay.active {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .cc-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .cc-body {
+            font-size: 14px;
+            line-height: 1.5;
+            opacity: 0.9;
+        }
+
+        .cc-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 8px;
+        }
+
+        .cc-btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 12px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .cc-btn-accept {
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+        .cc-btn-accept:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
+        }
+
+        .cc-btn-decline {
+            background: rgba(128, 128, 128, 0.1);
+            color: inherit;
+        }
+        .cc-btn-decline:hover {
+            background: rgba(128, 128, 128, 0.2);
+        }
+    `;
+    document.head.appendChild(style);
+
+    // Create Elements
+    const container = document.createElement('div');
+    container.className = 'cookie-consent-overlay';
+
+    container.innerHTML = `
+        <div class="cc-header">
+            <i data-lucide="cookie" class="w-6 h-6 text-primary"></i>
+            <span>We use cookies</span>
+        </div>
+        <div class="cc-body">
+            We use cookies to enhance your experience, keep you logged in, and analyze traffic. 
+            By continuing, you agree to our use of cookies.
+        </div>
+        <div class="cc-actions">
+            <button class="cc-btn cc-btn-decline" id="cc-decline">Decline</button>
+            <button class="cc-btn cc-btn-accept" id="cc-accept">Accept All</button>
+        </div>
+    `;
+
+    document.body.appendChild(container);
+
+    // Initialize icons in the new container
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons({
+            root: container,
+            nameAttr: 'data-lucide',
+            attrs: {
+                class: "w-6 h-6 text-primary"
+            }
+        });
+    }
+
+    // Animate In
+    setTimeout(() => {
+        container.classList.add('active');
+    }, 1000);
+
+    // Handlers
+    document.getElementById('cc-accept').addEventListener('click', () => {
+        localStorage.setItem('cookie_consent', 'true');
+        container.classList.remove('active');
+        setTimeout(() => container.remove(), 600);
+    });
+
+    document.getElementById('cc-decline').addEventListener('click', () => {
+        localStorage.setItem('cookie_consent', 'false');
+        container.classList.remove('active');
+        setTimeout(() => container.remove(), 600);
+    });
+}
+
 // --- Initialization ---
 window.onload = async () => {
     // Init Supabase
@@ -934,6 +1103,7 @@ window.onload = async () => {
     }
 
     setupInfiniteScroll();
+    initCookieConsent();
 
     // else Guest Home (Feed only)
 
