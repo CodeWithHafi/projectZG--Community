@@ -159,7 +159,12 @@ function createPostHTML(post) {
             
             ${post.media_urls && post.media_urls.length > 0 ? `
             <div class="mb-4 rounded-lg overflow-hidden border border-app grid gap-1 ${post.media_urls.length > 1 ? 'grid-cols-2' : 'grid-cols-1'}">
-                ${post.media_urls.map(url => `<img src="${url}" class="w-full object-cover max-h-96" alt="Post Media">`).join('')}
+                ${post.media_urls.map(url => {
+        const isVideo = url.match(/\.(mp4|webm|ogg|mov|quicktime)$/i);
+        return isVideo
+            ? `<video src="${url}" class="w-full h-full object-cover max-h-96" controls preload="metadata"></video>`
+            : `<img src="${url}" class="w-full object-cover max-h-96" alt="Post Media">`;
+    }).join('')}
             </div>` : ''}
 
             <div class="flex items-center justify-between pt-3 border-t border-app">
@@ -664,7 +669,7 @@ async function renderProfileView(profile, isOwnProfile) {
 
                     if (hasMedia) {
                         // Check if video
-                        const isVideo = post.media_urls[0].match(/\.(mp4|webm|ogg)$/i);
+                        const isVideo = post.media_urls[0].match(/\.(mp4|webm|ogg|mov|quicktime)$/i);
                         if (isVideo) {
                             el.innerHTML = `<video src="${post.media_urls[0]}" class="w-full h-full object-cover"></video>`;
                         } else {
