@@ -76,6 +76,14 @@ document.addEventListener('DOMContentLoaded', () => {
             hash === '#onboarding' ||
             searchParams.get('onboarding') === 'true';
 
+        console.log('[Auth-Debug] Route Info:', {
+            path,
+            hash,
+            search: window.location.search,
+            isOnboarding,
+            hasTokens: hashParams.has('access_token')
+        });
+
         // Error Handling
         if (searchParams.get('error')) {
             const err = searchParams.get('error');

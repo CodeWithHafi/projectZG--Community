@@ -152,9 +152,20 @@ const googleAuth = async (req, res) => {
         // Construct the base URL for redirection 
         // In local dev: http://localhost:3000
         // In prod: process.env.ALLOWED_ORIGIN or derived from req with whitelist check
-        const allowedOrigins = (process.env.ALLOWED_ORIGINS || process.env.ALLOWED_ORIGIN || '').split(',').map(o => o.trim()).filter(Boolean);
+        const rawOrigins = [
+            process.env.ALLOWED_ORIGINS,
+            process.env.ALLOWED_ORIGIN
+        ].filter(Boolean).join(',');
+
+        const allowedOrigins = rawOrigins.split(',').map(o => o.trim()).filter(Boolean);
         const requestOrigin = `${req.protocol}://${req.get('host')}`;
-        const origin = allowedOrigins.includes(requestOrigin) ? requestOrigin : allowedOrigins[0];
+
+        // Check if request origin is allowed, otherwise default to first allowed
+        // strip trailing slashes for comparison to be safe
+        const cleanReqOrigin = requestOrigin.replace(/\/$/, '');
+        const origin = allowedOrigins.find(o => o.replace(/\/$/, '') === cleanReqOrigin) || allowedOrigins[0];
+
+        console.log('[Auth-Start] Origins:', { requestOrigin, allowedOrigins, selectedOrigin: origin });
 
         if (!origin) {
             throw new Error('ALLOWED_ORIGIN or ALLOWED_ORIGINS environment variable must be set');
@@ -249,23 +260,33 @@ const googleCallback = async (req, res) => {
         // IMPORTANT: Explicitly set path: '/' so cookies are available everywhere
         setAuthCookies(res, session);
 
-        // Check if user has completed onboarding (has a username in profiles table)
+        // Check if user has completed onboarding
+        // Trigger might create a profile with default username, so we check for 'gender' which is set during onboarding
         const { data: profile, error: profileError } = await supabase
             .from('profiles')
-            .select('username')
+            .select('username, gender')
             .eq('id', session.user.id)
             .single();
 
+        console.log('[Auth-Callback] Profile Check:', {
+            id: session.user.id,
+            hasProfile: !!profile,
+            username: profile?.username,
+            gender: profile?.gender,
+            error: profileError?.message
+        });
 
         // Construct cleanup hash for client-side token handoff
         const hash = `access_token=${session.access_token}&refresh_token=${session.refresh_token}`;
 
-        // Ensure username is not just an empty string if a trigger created the row
-        if (profile && profile.username && profile.username.trim() !== '') {
+        // Ensure username is not just an empty string and GENDER is set
+        if (profile && profile.username && profile.username.trim() !== '' && profile.gender) {
             // Existing user -> Home
+            console.log('[Auth-Callback] Redirecting to Home');
             res.redirect(302, `/#${hash}`);
         } else {
             // New user -> Onboarding
+            console.log('[Auth-Callback] Redirecting to Onboarding');
             // Use query param which auth.js already looks for
             res.redirect(302, `/auth?onboarding=true#${hash}`);
         }
