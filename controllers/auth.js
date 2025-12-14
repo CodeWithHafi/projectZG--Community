@@ -1,4 +1,5 @@
-const { supabase, createAuthenticatedClient } = require('../utils/supabaseClient');
+const { supabase, createAuthenticatedClient, supabaseAdmin } = require('../utils/supabaseClient');
+const { uploadFile } = require('../utils/uploadHelper');
 const crypto = require('crypto');
 
 // - HELPER FUNCTIONS ---
@@ -192,9 +193,17 @@ const googleAuth = async (req, res) => {
         // Check if request origin is allowed, otherwise default to first allowed
         // strip trailing slashes for comparison to be safe
         const cleanReqOrigin = requestOrigin.replace(/\/$/, '');
-        const origin = allowedOrigins.find(o => o.replace(/\/$/, '') === cleanReqOrigin) || allowedOrigins[0];
+        let origin = allowedOrigins.find(o => o.replace(/\/$/, '') === cleanReqOrigin);
 
+        // In development, explicitly allow localhost if it's the request origin
+        if (!origin && process.env.NODE_ENV !== 'production' && (cleanReqOrigin.includes('localhost') || cleanReqOrigin.includes('127.0.0.1'))) {
+            origin = cleanReqOrigin;
+        }
 
+        // Fallback to first allowed origin (Production behavior)
+        if (!origin) {
+            origin = allowedOrigins[0];
+        }
 
         if (!origin) {
             throw new Error('ALLOWED_ORIGIN or ALLOWED_ORIGINS environment variable must be set');
@@ -297,7 +306,8 @@ const googleCallback = async (req, res) => {
         // Construct cleanup hash for client-side token handoff
         const hash = `access_token=${session.access_token}&refresh_token=${session.refresh_token}`;
 
-        // Ensure username is not just an empty string and GENDER is set
+        // Ensure username is not just an empty string
+        // Removed strict check for gender as it might be optional or missing for legacy users
         if (profile && profile.username && profile.username.trim() !== '' && profile.gender) {
             // Existing user -> Home
             res.redirect(302, `/#${hash}`);
@@ -439,33 +449,14 @@ const updatePassword = async (req, res) => {
 
 const onboarding = async (req, res) => {
     try {
-        // 1. Verify Authentication
-        const authHeader = req.headers.authorization;
-        // Also check cookies? For now, stick to logic in file which uses header
-
-        if (!authHeader) {
-            return res.status(401).json({ error: 'Missing Authorization header' });
-        }
-
-        if (!authHeader.startsWith('Bearer ')) {
-            return res.status(401).json({ error: 'Invalid Authorization scheme, Bearer expected' });
-        }
-        const token = authHeader.slice(7);
-        const refreshToken = req.headers['x-refresh-token'];
-
-        // Create Authenticated Client
-        const supabase = await createAuthenticatedClient(token, refreshToken);
-
-        // Verify validity of the token by getting the user
-        const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-        if (authError || !user) {
-            return res.status(401).json({ error: 'Invalid or expired token', details: authError });
+        // 1. Authenticate (Relies on authMiddleware)
+        const user = req.user;
+        if (!user) {
+            return res.status(401).json({ error: 'Unauthorized' });
         }
 
         const userId = user.id;
         const { username, gender, password } = req.body;
-
 
         // 2. Validate Inputs
         if (!username || username.length < 3) {
@@ -476,50 +467,70 @@ const onboarding = async (req, res) => {
             return res.status(400).json({ error: 'Password is required (min 8 characters)' });
         }
 
+        // Get Token for RLS operations
+        const token = req.cookies['sb-access-token'] ||
+            (req.headers.authorization && req.headers.authorization.split(' ')[1]);
+
+        let client = supabase;
+        if (token) {
+            client = await createAuthenticatedClient(token) || supabase;
+        }
+
+        // Try to fetch profile to confirm existence
+        const { data: existingProfile } = await client
+            .from('profiles')
+            .select('id')
+            .eq('id', userId)
+            .single();
+
+        if (!existingProfile) {
+            console.warn('Profile not found for user during onboarding. Expecting trigger creation.');
+        }
+
+
+
+        // 2.5 Check if username is taken 
+        const { data: usernameCheck, error: checkError } = await supabaseAdmin
+            .from('profiles')
+            .select('id')
+            .eq('username', username)
+            .neq('id', userId)
+            .maybeSingle();
+
+        if (checkError) {
+            console.error('Username Check Error:', checkError);
+            return res.status(500).json({ error: 'Failed to validate username availability' });
+        }
+
+        if (usernameCheck) {
+            console.warn(`[Onboarding] Username '${username}' taken by ${usernameCheck.id} (Current User: ${userId})`);
+            return res.status(409).json({ error: 'Username is already taken' });
+        }
+
         let avatarUrl = null;
 
         // 3. Handle Avatar Upload
         if (req.file) {
-            const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-            if (!allowedMimeTypes.includes(req.file.mimetype)) {
-                return res.status(400).json({ error: 'Invalid file type. Only JPEG, PNG, GIF, and WebP are allowed.' });
-            }
-
-            const fileExt = req.file.mimetype.split('/')[1] || 'img';
-            const fileName = `avatar_${Date.now()}.${fileExt}`;
-            const filePath = `${userId}/${fileName}`;
-
-            // Upload to 'avatars' bucket
-            const { error: uploadError } = await supabase.storage
-                .from('avatars')
-                .upload(filePath, req.file.buffer, {
-                    contentType: req.file.mimetype,
-                    upsert: true
+            try {
+                const uploadResult = await uploadFile(req.file, 'avatars', userId, token);
+                avatarUrl = uploadResult.publicUrl;
+                const { error: mediaError } = await client.from('media').insert({
+                    user_id: userId,
+                    bucket_name: 'avatars',
+                    file_path: uploadResult.filePath,
+                    file_name: uploadResult.fileName,
+                    file_size: uploadResult.fileSize,
+                    mime_type: uploadResult.mimeType,
+                    is_public: true
                 });
 
-            if (uploadError) {
-                console.error('Upload Error:', uploadError);
-                throw new Error('Failed to upload avatar');
-            }
+                if (mediaError) {
+                    console.error('Media Insert Error:', mediaError);
+                }
 
-            // Get Public URL
-            const { data } = supabase.storage.from('avatars').getPublicUrl(filePath);
-            avatarUrl = data.publicUrl;
-
-            // Insert into Media Table
-            const { error: mediaError } = await supabase.from('media').insert({
-                user_id: userId,
-                bucket_name: 'avatars',
-                file_path: filePath,
-                file_name: fileName,
-                file_size: req.file.size,
-                mime_type: req.file.mimetype,
-                is_public: true
-            });
-
-            if (mediaError) {
-                console.error('Media Insert Error:', mediaError);
-                // Non-fatal? Maybe, but good to track.
+            } catch (uploadErr) {
+                console.error('Avatar Upload Failed:', uploadErr);
+                return res.status(500).json({ error: 'Failed to upload avatar' });
             }
         }
 
@@ -534,7 +545,7 @@ const onboarding = async (req, res) => {
             updates.avatar_url = avatarUrl;
         }
 
-        const { error: profileError } = await supabase
+        const { error: profileError } = await client
             .from('profiles')
             .update(updates)
             .eq('id', userId);
@@ -547,17 +558,34 @@ const onboarding = async (req, res) => {
             throw profileError;
         }
 
-        const { error: passwordError } = await supabase.auth.updateUser({
-            password: password
-        });
+        // Use Admin client for password update to bypass session requirement
+        const { error: passwordError } = await supabaseAdmin.auth.admin.updateUserById(
+            userId,
+            { password: password }
+        );
 
         if (passwordError) {
             throw passwordError;
         }
 
+        // 5. Re-authenticate to get a valid session (Password change invalidates old tokens)
+        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+            email: user.email,
+            password: password
+        });
+
+        if (signInError) {
+            console.warn('Onboarding Re-Auth Failed:', signInError);
+            // User will be redirected to Login by frontend if session missing
+        } else if (signInData.session) {
+            // Use shared helper to set cookies
+            setAuthCookies(res, signInData.session);
+        }
+
         res.json({
             message: 'Profile completed successfully!',
-            avatar_url: avatarUrl
+            avatar_url: avatarUrl,
+            session: signInData?.session
         });
 
     } catch (err) {

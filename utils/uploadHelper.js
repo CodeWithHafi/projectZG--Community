@@ -6,7 +6,7 @@ const { supabase, createAuthenticatedClient } = require('./supabaseClient');
  * @param {string} bucket - The bucket name ('avatars', 'posts', 'stories')
  * @param {string} userId - The ID of the user uploading the file
  * @param {string} [token] - Optional access token for authenticated upload (RLS)
- * @returns {Promise<string>} - The public URL of the uploaded file
+ * @returns {Promise<{publicUrl: string, filePath: string, fileName: string, fileSize: number, mimeType: string}>} - The upload result
  */
 const uploadFile = async (file, bucket, userId, token) => {
     try {
@@ -43,7 +43,13 @@ const uploadFile = async (file, bucket, userId, token) => {
             .from(bucket)
             .getPublicUrl(filePath);
 
-        return publicUrl;
+        return {
+            publicUrl,
+            filePath,
+            fileName,
+            fileSize: file.size || file.buffer.length,
+            mimeType: file.mimetype
+        };
     } catch (err) {
         console.error('Upload Helper Error:', err);
         throw new Error('File upload failed');

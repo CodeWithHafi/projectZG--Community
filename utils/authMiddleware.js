@@ -29,7 +29,13 @@ const authMiddleware = (req, res, next) => {
     supabase.auth.getUser(token).then(({ data, error }) => {
         if (error || !data.user) {
             console.error('Auth Middleware Verification Failed:', error ? error.message : 'No user');
-            return res.status(401).json({ error: 'Unauthorized: Invalid token' });
+
+            // If the user doesn't exist (e.g. deleted from DB but token remains), clear cookies
+            if (res.cookies && (res.cookies['sb-access-token'] || res.cookies['sb-refresh-token'])) {
+                res.clearCookie('sb-access-token');
+                res.clearCookie('sb-refresh-token');
+            }
+            return res.status(401).json({ error: 'Unauthorized: Invalid token or user check failed' });
         }
 
         req.user = data.user;

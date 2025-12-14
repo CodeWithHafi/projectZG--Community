@@ -42,7 +42,7 @@ const Toast = {
         };
 
         const toast = document.createElement('div');
-        toast.className = `flex items-center gap-3 p-4 px-5 rounded-xl bg-white shadow-xl ring-1 ring-black/5 min-w-[320px] max-w-[420px] relative overflow-hidden pointer-events-auto toast-enter`;
+        toast.className = `flex items-center gap-3 p-4 px-5 rounded-xl bg-white shadow-xl ring-1 ring-black/5 w-full md:w-auto md:min-w-[320px] md:max-w-[420px] relative overflow-hidden pointer-events-auto toast-enter`;
 
         const icon = document.createElement('div');
         icon.className = `w-10 h-10 rounded-full flex items-center justify-center shrink-0 text-white ${typeStyles[type]}`;

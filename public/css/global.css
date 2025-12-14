@@ -228,11 +228,45 @@
 }
 
 .toast-enter {
-    animation: toastSlideIn 0.5s cubic-bezier(0.68,-0.55,0.265,1.55) forwards;
+    animation: toastSlideIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
 }
 
 .toast-exit {
-    animation: toastSlideOut 0.4s cubic-bezier(0.68,-0.55,0.265,1.55) forwards;
+    animation: toastSlideOut 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+}
+
+@media (max-width: 768px) {
+    @keyframes toastSlideInMobile {
+        0% {
+            transform: translateY(120%);
+            opacity: 0;
+        }
+
+        100% {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
+    @keyframes toastSlideOutMobile {
+        0% {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        100% {
+            transform: translateY(120%);
+            opacity: 0;
+        }
+    }
+
+    .toast-enter {
+        animation: toastSlideInMobile 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+    }
+
+    .toast-exit {
+        animation: toastSlideOutMobile 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+    }
 }
 
 /* Ensure transitions are smooth */

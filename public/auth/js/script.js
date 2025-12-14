@@ -257,11 +257,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- ONBOARDING FLOW ---
     // Step 1: Username
-    document.getElementById('ob-next-1')?.addEventListener('click', () => {
+    // Step 1: Username
+    document.getElementById('ob-next-1')?.addEventListener('click', async (e) => {
         const val = getVal('ob-username');
         if (val.length < 3) return showToast('warning', "Username too short", "Invalid");
-        store.dispatch(Actions.updateOnboardingData({ username: val }));
-        store.dispatch(Actions.setOnboardingStep(2));
+
+        const btn = e.target;
+        const originalText = btn.innerText;
+        btn.innerText = 'Checking...';
+        btn.disabled = true;
+
+        try {
+            // Check availability via public profile endpoint
+            const res = await fetch(`${API_URL}/profile/${val}`);
+            if (res.ok) {
+                // 200 OK = User exists = Taken
+                showToast('error', "Username is already taken", "Unavailable");
+            } else if (res.status === 404) {
+                // 404 = User not found = Available
+                store.dispatch(Actions.updateOnboardingData({ username: val }));
+                store.dispatch(Actions.setOnboardingStep(2));
+            } else {
+                throw new Error('Check failed');
+            }
+        } catch (err) {
+            console.error(err);
+            showToast('error', "Could not verify username", "Error");
+        } finally {
+            btn.innerText = originalText;
+            btn.disabled = false;
+        }
     });
 
     // Step 2: Gender
@@ -331,6 +356,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 const data = await res.json();
                 if (!res.ok) throw new Error(data.error);
+
+                // Update Session if provided (likely due to password change invalidating old one)
+                if (data.session) {
+                    const { access_token, refresh_token } = data.session;
+
+                    // Update Cookies
+                    document.cookie = `sb-access-token=${access_token}; path=/; max-age=3600; SameSite=Lax`;
+                    document.cookie = `sb-refresh-token=${refresh_token}; path=/; max-age=2592000; SameSite=Lax`;
+
+                    // Update LocalStorage
+                    localStorage.setItem('sb-access-token', access_token);
+                    localStorage.setItem('sb-refresh-token', refresh_token);
+
+                    // Update Stores/Runtime vars
+                    if (typeof sessionToken !== 'undefined') sessionToken = access_token;
+                    store.dispatch(Actions.setUser(data.user || store.getState().user)); // Ensure user is fresh
+                }
 
                 showToast('success', "Profile Ready!", "Welcome");
                 setTimeout(() => window.location.href = '/', 1500);
