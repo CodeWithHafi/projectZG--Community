@@ -24,8 +24,9 @@
 
         initialToken = at;
 
-        // Clear hash to clean up URL
-        window.history.replaceState(null, null, window.location.pathname);
+        // Clear hash to clean up URL but PRESERVE search params (which contain onboarding=true)
+        const newUrl = window.location.pathname + window.location.search;
+        window.history.replaceState(null, null, newUrl);
     }
 
     // 2. Perform Auth Check
@@ -66,13 +67,16 @@
             const path = window.location.pathname;
             const search = new URLSearchParams(window.location.search);
 
+            // CRITICAL: Check for onboarding param. If present, DO NOT redirect to home.
+            const isOnboarding = search.get('onboarding') === 'true' || path.includes('onboarding');
+
             // Redirect to home ONLY if we are NOT onboarding
-            if (path.includes('/auth') && !path.includes('/reset-password') && !path.includes('/verify-email') && search.get('onboarding') !== 'true') {
+            if (path.includes('/auth') && !path.includes('/reset-password') && !path.includes('/verify-email') && !isOnboarding) {
                 // User is already logged in and on auth page
                 const urlParams = new URLSearchParams(window.location.search);
                 const redirectTarget = urlParams.get('redirect') || '/';
 
-                // Redirect immediately if already logged in
+                // Redirect immediately if already logged in AND not onboarding
                 window.location.href = redirectTarget;
             }
         }

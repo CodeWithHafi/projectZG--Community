@@ -37,6 +37,9 @@ router.get('/stories', authMiddleware, profile.getActiveStories);
 router.post('/stories', authMiddleware, profile.createStory);
 
 // --- Profile ---
+// GET /api/me
+router.get('/me', authMiddleware, profile.getMyProfile);
+
 // GET /api/profile
 router.get('/profile', authMiddleware, profile.getProfile);
 

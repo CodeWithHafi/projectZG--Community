@@ -1,10 +1,22 @@
 const { supabase, createAuthenticatedClient } = require('../utils/supabaseClient');
 
 // Get authenticated user's profile
+// Get authenticated user's profile
 exports.getProfile = async (req, res) => {
     try {
         const userId = req.user.id;
-        let { data: profile, error } = await supabase
+
+        // Use Authenticated Client to ensure RLS policies are respected
+        const token = req.cookies['sb-access-token'] ||
+            (req.headers.authorization && req.headers.authorization.split(' ')[1]);
+
+        let client = supabase;
+        if (token) {
+            const authClient = await createAuthenticatedClient(token);
+            if (authClient) client = authClient;
+        }
+
+        let { data: profile, error } = await client
             .from('profiles')
             .select('*')
             .eq('id', userId)
@@ -12,27 +24,8 @@ exports.getProfile = async (req, res) => {
 
         // Handle case where profile doesn't exist (e.g. trigger failed or old user)
         if (!profile && error && error.code === 'PGRST116') {
-            const metadata = req.user.user_metadata || {};
-            // Generate a default username if missing
-            const defaultUsername = metadata.username || `${userId.substr(0, 8)}`;
-
-            const { data: newProfile, error: createError } = await supabase
-                .from('profiles')
-                .insert({
-                    id: userId,
-                    username: defaultUsername,
-                    full_name: metadata.full_name || '',
-                    avatar_url: metadata.avatar_url || null
-                })
-                .select()
-                .single();
-
-            if (createError) {
-                console.error('Failed to auto-create profile:', createError);
-                throw createError;
-            }
-            profile = newProfile;
-            error = null;
+            // Return null profile to indicate incomplete
+            return res.json({ profile: null });
         }
 
         if (error) throw error;
@@ -42,6 +35,8 @@ exports.getProfile = async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch profile' });
     }
 };
+
+exports.getMyProfile = exports.getProfile; // Alias for clarity
 
 // Update authenticated user's profile
 exports.updateProfile = async (req, res) => {
@@ -61,7 +56,8 @@ exports.updateProfile = async (req, res) => {
                 token = req.cookies['sb-access-token'];
             }
 
-            avatar_url = await uploadFile(req.file, 'avatars', userId, token);
+            const uploadResult = await uploadFile(req.file, 'avatars', userId, token);
+            avatar_url = uploadResult.publicUrl;
         }
 
         const updates = {};
@@ -277,8 +273,8 @@ exports.createPost = async (req, res) => {
 
         const mediaUrls = [];
         for (const file of files) {
-            const url = await uploadFile(file, 'posts', userId, token);
-            mediaUrls.push(url);
+            const uploadResult = await uploadFile(file, 'posts', userId, token);
+            mediaUrls.push(uploadResult.publicUrl);
         }
 
         // Create authenticated client for DB operations (RLS check)

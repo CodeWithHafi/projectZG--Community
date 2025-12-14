@@ -91,7 +91,8 @@ async function toggleLike(button, postId) {
     try {
         await fetch(`${API_URL}/posts/${postId}/like`, {
             method: 'POST',
-            headers: getHeaders()
+            headers: getHeaders(),
+            credentials: 'include'
         });
     } catch (err) {
         console.error('Like action failed:', err);
@@ -117,7 +118,8 @@ async function toggleBookmark(button, postId) {
     try {
         await fetch(`${API_URL}/posts/${postId}/bookmark`, {
             method: 'POST',
-            headers: getHeaders()
+            headers: getHeaders(),
+            credentials: 'include'
         });
     } catch (err) {
         console.error('Bookmark action failed:', err);
@@ -191,7 +193,10 @@ async function fetchFeed() {
     if (!feedContainer) return;
 
     try {
-        const response = await fetch(`${API_URL}/posts`, { headers: getHeaders() });
+        const response = await fetch(`${API_URL}/posts`, {
+            headers: getHeaders(),
+            credentials: 'include'
+        });
         if (response.ok) {
             const data = await response.json();
             if (data.posts && data.posts.length > 0) {
@@ -324,6 +329,7 @@ async function submitPost() {
         const response = await fetch(`${API_URL}/posts`, {
             method: 'POST',
             headers: headers,
+            credentials: 'include',
             body: formData
         });
 
@@ -354,7 +360,10 @@ async function fetchStories() {
     if (!list) return;
 
     try {
-        const response = await fetch(`${API_URL}/stories`, { headers: getHeaders() });
+        const response = await fetch(`${API_URL}/stories`, {
+            headers: getHeaders(),
+            credentials: 'include'
+        });
         if (response.ok) {
             const { stories } = await response.json();
 
@@ -387,9 +396,16 @@ let currentUser = null;
 // --- Profile Logic ---
 async function fetchProfile() {
     try {
-        const response = await fetch(`${API_URL}/profile`, { headers: getHeaders() });
+        const headers = getHeaders();
+        console.log('[DEBUG] fetchProfile Headers:', headers); // DEBUG
+
+        const response = await fetch(`${API_URL}/profile`, {
+            headers,
+            credentials: 'include' // Send cookies
+        });
         if (response.ok) {
             const { profile } = await response.json();
+            console.log('[DEBUG] fetchProfile Success:', profile); // DEBUG
             currentUser = profile; // Store for comparison
 
             // Update "You" context in sidebar/modals (global context)
@@ -397,6 +413,8 @@ async function fetchProfile() {
 
             // Render Profile View for ME
             renderProfileView(profile, true);
+        } else {
+            console.warn('[DEBUG] fetchProfile Failed:', response.status); // DEBUG
         }
     } catch (err) {
         console.error('Error loading profile:', err);
@@ -405,14 +423,23 @@ async function fetchProfile() {
 
 async function loadPublicProfile(username) {
     try {
+        // Update URL
+        const newUrl = `${window.location.protocol}//${window.location.host}/?user=${username}`;
+        window.history.pushState({ path: newUrl }, '', newUrl);
+
         changeView('profile'); // Switch to view
 
         // Show loading state or clear previous content
         // (Optional: Add skeleton loader here)
 
-        const response = await fetch(`${API_URL}/profile/${username}`, { headers: getHeaders() });
+        const response = await fetch(`${API_URL}/profile/${username}`, {
+            headers: getHeaders(),
+            credentials: 'include' // Send cookies (needed for follow status check)
+        });
         if (response.ok) {
             const { profile } = await response.json();
+
+            console.log('[DEBUG] loadPublicProfile currentUser:', currentUser); // DEBUG
 
             // Real comparison logic
             const isOwnProfile = currentUser && (currentUser.username === profile.username || currentUser.id === profile.id);
@@ -420,6 +447,7 @@ async function loadPublicProfile(username) {
 
             // If Guest, show the "Login to Connect" modal after a short delay or immediately
             if (!currentUser) {
+                console.log('[DEBUG] Guest detected, showing modal'); // DEBUG
                 // User asked to "hide it with login modal". 
                 // We show it immediately.
                 setTimeout(() => showModal('authModal'), 500);
@@ -478,7 +506,8 @@ async function toggleFollow(btn, userId) {
     try {
         const response = await fetch(`${API_URL}/profile/follow/${userId}`, {
             method: 'POST',
-            headers: getHeaders()
+            headers: getHeaders(),
+            credentials: 'include'
         });
 
         if (!response.ok) throw new Error('Action failed');
@@ -505,6 +534,31 @@ async function toggleFollow(btn, userId) {
         btn.disabled = false;
     }
 }
+
+// Load "My" Profile (Nav Handler)
+async function loadMyProfile() {
+    if (!currentUser) {
+        // If not logged in, show auth modal
+        showModal('authModal');
+        return;
+    }
+
+    try {
+        // 1. Reset URL to clean origin
+        const cleanUrl = `${window.location.protocol}//${window.location.host}/`;
+        window.history.pushState({ path: cleanUrl }, '', cleanUrl);
+
+        // 2. Render My Profile
+        renderProfileView(currentUser, true);
+
+        // 3. Switch View
+        changeView('profile');
+    } catch (err) {
+        console.error('Error loading my profile:', err);
+    }
+}
+
+window.loadMyProfile = loadMyProfile; // Expose to window
 
 async function renderProfileView(profile, isOwnProfile) {
     const pView = document.getElementById('profileView');
@@ -595,7 +649,10 @@ async function renderProfileView(profile, isOwnProfile) {
     if (grid) grid.innerHTML = '<div class="col-span-3 text-center py-4"><div class="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto"></div></div>';
 
     try {
-        const postsRes = await fetch(postsEndpoint, { headers: getHeaders() });
+        const postsRes = await fetch(postsEndpoint, {
+            headers: getHeaders(),
+            credentials: 'include'
+        });
         if (postsRes.ok) {
             const { posts } = await postsRes.json();
             if (grid) {
@@ -699,6 +756,7 @@ window.saveProfile = async () => {
                 // Do NOT set Content-Type for FormData
                 'Authorization': getHeaders()['Authorization']
             },
+            credentials: 'include',
             body: formData
         });
 
@@ -741,11 +799,29 @@ function updateNavStyles(viewId) {
         link.classList.add('text-secondary');
     });
 
+    // Mobile Nav Active State
+    document.querySelectorAll('.mobile-nav-link').forEach(btn => {
+        btn.classList.remove('text-primary');
+        if (btn.getAttribute('onclick').includes(viewId)) {
+            btn.classList.add('text-primary');
+        } else {
+            btn.classList.add('text-secondary');
+        }
+    });
+
     const activeLinks = document.querySelectorAll(`[onclick="changeView('${viewId}')"]`);
     activeLinks.forEach(link => {
         link.classList.remove('text-secondary');
         link.classList.add('text-primary');
     });
+
+    // Auto-focus search input if switching to search view
+    if (viewId === 'search') {
+        setTimeout(() => {
+            const searchInput = document.getElementById('search-input');
+            if (searchInput) searchInput.focus();
+        }, 100);
+    }
 }
 
 function changeView(viewId) {
@@ -1079,6 +1155,108 @@ function initCookieConsent() {
     });
 }
 
+
+// --- Search Logic ---
+
+/**
+ * Debounce utility to limit API calls
+ * @param {Function} func - Function to debounce
+ * @param {number} wait - Wait time in ms
+ */
+function debounce(func, wait) {
+    let timeout;
+    return function (...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), wait);
+    };
+}
+
+/**
+ * Perform Search API call
+ * @param {string} query 
+ */
+async function performSearch(query) {
+    const resultsContainer = document.getElementById('search-results');
+
+    if (!query || query.trim().length === 0) {
+        resultsContainer.innerHTML = `
+            <div class="text-center py-10 text-secondary opacity-50">
+                <i data-lucide="search" class="w-12 h-12 mx-auto mb-3"></i>
+                <p>Start typing to search...</p>
+            </div>`;
+        if (window.lucide) lucide.createIcons();
+        return;
+    }
+
+    resultsContainer.innerHTML = `
+        <div class="flex justify-center p-4">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+    `;
+
+    try {
+        const response = await fetch(`${API_URL}/search?q=${encodeURIComponent(query)}`);
+        const data = await response.json();
+
+        if (data.users.length === 0 && data.hashtags.length === 0) {
+            resultsContainer.innerHTML = `
+                <div class="text-center py-10 text-secondary">
+                    <p>No results found for "${query}"</p>
+                </div>`;
+            return;
+        }
+
+        let html = '';
+
+        // Users Section
+        if (data.users.length > 0) {
+            html += `<h4 class="text-xs font-bold text-secondary uppercase tracking-wider mb-2 mt-2 px-2">People</h4>`;
+            data.users.forEach(user => {
+                const avatar = user.avatar_url || `https://placehold.co/40x40/e2e8f0/64748b?text=${user.username.substring(0, 2).toUpperCase()}`;
+                html += `
+                    <button onclick="loadPublicProfile('${user.username}')" class="w-full flex items-center p-2 hover:bg-hover-bg rounded-lg transition-colors text-left group">
+                        <img src="${avatar}" class="w-10 h-10 rounded-full object-cover mr-3 border border-app" onerror="this.src='https://placehold.co/40x40/e2e8f0/64748b?text=User'">
+                        <div>
+                            <p class="font-bold text-main group-hover:text-primary transition-colors">${user.username}</p>
+                            <p class="text-xs text-secondary">${user.full_name || ''}</p>
+                        </div>
+                    </button>
+                `;
+            });
+        }
+
+        // Hashtags Section
+        if (data.hashtags.length > 0) {
+            html += `<h4 class="text-xs font-bold text-secondary uppercase tracking-wider mb-2 mt-4 px-2">Hashtags</h4>`;
+            data.hashtags.forEach(tag => {
+                html += `
+                    <button class="w-full flex items-center p-3 hover:bg-hover-bg rounded-lg transition-colors text-left group">
+                        <div class="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center mr-3 group-hover:bg-primary group-hover:text-white transition-colors">
+                            <i data-lucide="hash" class="w-5 h-5"></i>
+                        </div>
+                        <span class="font-medium text-main group-hover:text-primary transition-colors">${tag}</span>
+                    </button>
+                `;
+            });
+        }
+
+        resultsContainer.innerHTML = html;
+        if (window.lucide) lucide.createIcons();
+
+    } catch (err) {
+        console.error("Search failed:", err);
+        resultsContainer.innerHTML = `<div class="text-red-500 text-center p-4">Search failed. Please try again.</div>`;
+    }
+}
+
+// Attach Search Listener
+const searchInput = document.getElementById('search-input');
+if (searchInput) {
+    searchInput.addEventListener('input', debounce((e) => {
+        performSearch(e.target.value);
+    }, 300));
+}
+
 // --- Initialization ---
 window.onload = async () => {
     // Init Supabase
@@ -1105,10 +1283,18 @@ window.onload = async () => {
     setupInfiniteScroll();
     initCookieConsent();
 
-    // else Guest Home (Feed only)
+    // Check for deep link (user param)
+    const urlParams = new URLSearchParams(window.location.search);
+    const publicUser = urlParams.get('user');
 
-    fetchFeed();
-    fetchStories();
+    if (publicUser) {
+        // Deep link to profile
+        loadPublicProfile(publicUser);
+    } else {
+        // else Guest Home (Feed only)
+        fetchFeed();
+        fetchStories();
+    }
 };
 
 window.shareProfile = (username) => {

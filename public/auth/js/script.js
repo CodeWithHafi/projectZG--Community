@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Access Redux Store and Actions (exposed globally in store.js)
     const store = window['store'];
     const Actions = window.Actions;
+    let sessionToken = null;
 
     // Toast Helper
     const showToast = (type, msg, title) => {
@@ -250,16 +251,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     document.cookie = `sb-access-token=${data.session.access_token}; path=/; max-age=3600; SameSite=Lax`;
                     document.cookie = `sb-refresh-token=${data.session.refresh_token}; path=/; max-age=2592000; SameSite=Lax`;
                 }
-
-                store.dispatch(Actions.setUser(data.user));
-                showToast('success', "Welcome back!", "Signed In");
-
-                // Redirect logic
-                const search = new URLSearchParams(window.location.search);
-                const redirectTarget = search.get('redirect');
-                const target = redirectTarget ? decodeURIComponent(redirectTarget) : '/';
-
-                window.location.href = target;
             } catch (err) {
                 showToast('error', err.message, "Login Failed");
             }
@@ -267,7 +258,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- ONBOARDING FLOW ---
-    // Step 1: Username
     // Step 1: Username
     document.getElementById('ob-next-1')?.addEventListener('click', async (e) => {
         const val = getVal('ob-username');

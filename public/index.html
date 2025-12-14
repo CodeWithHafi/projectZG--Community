@@ -56,7 +56,11 @@
                     </div>
                     <span class="font-medium ml-3 hidden lg:inline">Notifications</span>
                 </button>
-                <button onclick="changeView('profile')" class="nav-link flex items-center justify-center lg:justify-start p-3 rounded-xl hover:bg-hover-bg text-secondary hover:text-primary transition-all duration-200 w-12 h-12 lg:w-full lg:h-auto">
+                <button onclick="changeView('search')" class="nav-link flex items-center justify-center lg:justify-start p-3 rounded-xl hover:bg-hover-bg text-secondary hover:text-primary transition-all duration-200 w-12 h-12 lg:w-full lg:h-auto">
+                    <i data-lucide="search" class="w-6 h-6"></i>
+                    <span class="font-medium ml-3 hidden lg:inline">Search</span>
+                </button>
+                <button onclick="loadMyProfile()" class="nav-link flex items-center justify-center lg:justify-start p-3 rounded-xl hover:bg-hover-bg text-secondary hover:text-primary transition-all duration-200 w-12 h-12 lg:w-full lg:h-auto">
                     <i data-lucide="user" class="w-6 h-6"></i>
                     <span class="font-medium ml-3 hidden lg:inline">Profile</span>
                 </button>
@@ -150,6 +154,26 @@
                     </div>
                 </div>
 
+                <!-- 4. SEARCH VIEW (New View) -->
+                <div id="searchView" class="view-content hidden">
+                    <div class="bg-surface p-6 rounded-xl shadow-md max-w-lg mx-auto transition-colors duration-300 border border-app min-h-[500px] flex flex-col">
+                        <h2 class="text-2xl font-bold text-main mb-4">Search</h2>
+                        
+                        <div class="relative mb-6">
+                            <i data-lucide="search" class="absolute left-3 top-3.5 w-5 h-5 text-secondary"></i>
+                            <input type="text" id="search-input" placeholder="Search for users or hashtags..." class="w-full pl-10 p-3 border border-app rounded-xl bg-bg text-main focus:ring-2 focus:ring-primary focus:border-primary transition-all">
+                        </div>
+
+                        <div id="search-results" class="flex-1 overflow-y-auto space-y-1">
+                             <!-- Initial State -->
+                            <div class="text-center py-10 text-secondary opacity-50">
+                                <i data-lucide="search" class="w-12 h-12 mx-auto mb-3"></i>
+                                <p>Start typing to explore...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Profile View -->
                 <div id="profileView" class="view-content hidden">
                     <div class="bg-surface p-6 rounded-xl shadow-md max-w-lg mx-auto transition-colors duration-300 border border-app">
@@ -218,7 +242,7 @@
                     <div class="bg-surface p-6 rounded-xl shadow-md max-w-lg mx-auto transition-colors duration-300 border border-app">
                                 
                         <div class="flex items-center mb-6">
-                            <button onclick="changeView('profile')" class="mr-4 text-secondary hover:text-primary md:hidden">
+                            <button onclick="loadMyProfile()" class="mr-4 text-secondary hover:text-primary md:hidden">
                                 <i data-lucide="arrow-left" class="w-6 h-6"></i>
                             </button>
                             <h2 class="text-2xl font-bold text-main">Settings</h2>
@@ -319,13 +343,18 @@
                 <i data-lucide="heart" class="w-6 h-6"></i>
             </button>
 
+            <!-- Search -->
+            <button onclick="changeView('search')" class="mobile-nav-link text-secondary">
+                <i data-lucide="search" class="w-6 h-6"></i>
+            </button>
+
             <!-- Theme Toggle -->
             <button onclick="toggleTheme()" class="mobile-nav-link text-secondary">
                 <i data-lucide="sun-moon" id="theme-icon-mobile" class="w-6 h-6"></i>
             </button>
             
             <!-- Profile -->
-            <button onclick="changeView('profile')" class="mobile-nav-link text-secondary">
+            <button onclick="loadMyProfile()" class="mobile-nav-link text-secondary">
                 <i data-lucide="user" class="w-6 h-6"></i>
             </button>
         </div>

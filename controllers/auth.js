@@ -301,18 +301,25 @@ const googleCallback = async (req, res) => {
             .eq('id', session.user.id)
             .single();
 
-
+        console.log(`[Auth-Callback] Profile Check for ${session.user.id}:`, profile || 'No Profile Found', profileError || '');
 
         // Construct cleanup hash for client-side token handoff
         const hash = `access_token=${session.access_token}&refresh_token=${session.refresh_token}`;
 
-        // Ensure username is not just an empty string
-        // Removed strict check for gender as it might be optional or missing for legacy users
-        if (profile && profile.username && profile.username.trim() !== '' && profile.gender) {
+        // Ensure username is not just an empty string AND gender is valid
+        const validGenders = ['male', 'female', 'other'];
+        const hasValidProfile = profile &&
+            profile.username &&
+            profile.username.trim() !== '' &&
+            validGenders.includes(profile.gender);
+
+        if (hasValidProfile) {
             // Existing user -> Home
+            console.log('[Auth-Callback] Redirecting to Home (Profile Complete)');
             res.redirect(302, `/#${hash}`);
         } else {
             // New user -> Onboarding
+            console.log('[Auth-Callback] Redirecting to Onboarding (Profile Incomplete)');
             // Use query param which auth.js already looks for
             res.redirect(302, `/auth?onboarding=true#${hash}`);
         }

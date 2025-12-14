@@ -10,8 +10,8 @@ const authMiddleware = (req, res, next) => {
         return;
     }
 
-    const token = req.cookies['sb-access-token'] ||
-        (req.headers.authorization && req.headers.authorization.split(' ')[1]);
+    const token = (req.headers.authorization && req.headers.authorization.split(' ')[1]) ||
+        req.cookies['sb-access-token'];
 
     if (!token) {
         // Debug: Check if we are in a route that might not need auth or if it's missing

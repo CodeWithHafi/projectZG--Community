@@ -9,7 +9,7 @@ BEGIN
   IF new.raw_user_meta_data->>'username' IS NOT NULL THEN
     default_username := new.raw_user_meta_data->>'username';
   ELSE
-    default_username := 'user_' || substr(new.id::text, 1, 8);
+    default_username := NULL; 
   END IF;
 
   BEGIN

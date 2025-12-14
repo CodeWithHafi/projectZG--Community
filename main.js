@@ -96,6 +96,7 @@ app.get([
 // API Routes
 app.use('/api/auth', require('./api/auth/index'));
 app.use('/api', require('./api/profile/index'));
+app.use('/api/search', require('./api/search/index'));
 
 // 500 Handler
 app.use((err, req, res, next) => {
