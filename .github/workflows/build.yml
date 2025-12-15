@@ -32,9 +32,7 @@ jobs:
       - id: audit
         name: Dependency vulnerability scan
         run: |
-          # Run npm audit and capture JSON output. Don't fail the job immediately.
           npm audit --json > audit.json || true
-          # Determine whether any vulnerabilities exist and expose as a step output
           node -e "const fs=require('fs');try{const a=JSON.parse(fs.readFileSync('audit.json'));const v=a&&a.metadata&&a.metadata.vulnerabilities?Object.values(a.metadata.vulnerabilities).reduce((s,n)=>s+n,0):0;console.log(v>0)}catch(e){console.log(false)}" > /tmp/vulnerable
           echo "vulnerable=$(cat /tmp/vulnerable)" >> $GITHUB_OUTPUT
         shell: bash
@@ -42,7 +40,7 @@ jobs:
       - name: Upload audit JSON artifact
         uses: actions/upload-artifact@v4
         with:
-          name: audit-json
+          name: audit-json-node-${{ matrix.node-version }}
           path: audit.json
 
       - name: Create issue on vulnerability detection
@@ -54,7 +52,6 @@ jobs:
             const fs = require('fs');
             const title = 'Security: Vulnerability detected in dependencies';
 
-            // Avoid duplicating issues: check if there's already an open issue with the same title
             const existing = await github.rest.issues.listForRepo({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -65,17 +62,15 @@ jobs:
             if (existing.data.some(i => i.title === title)) {
               console.log('Open issue with the same title already exists — skipping creation.');
             } else {
-              let body = `A vulnerability has been detected in the project dependencies.\n\nCommit: ${context.sha}\nRef: ${context.ref}\nActor: ${context.actor}\n\nThe full npm audit JSON output is attached to the workflow run as an artifact named "audit-json".\n\nFull audit JSON (included below):\n\n`;
+              let body = `A vulnerability has been detected in the project dependencies.\n\nCommit: ${context.sha}\nRef: ${context.ref}\nActor: ${context.actor}\n\nAudit artifact: audit-json-node-${{ matrix.node-version }}\n\nFull audit JSON:\n\n`;
 
               try {
                 const audit = fs.readFileSync('audit.json', 'utf8');
-                // Include the full JSON in the issue body inside a fenced code block
                 body += '```json\n' + audit + '\n```\n';
-              } catch (err) {
-                body += 'Could not read audit.json to include in the issue.\n';
+              } catch {
+                body += 'Could not read audit.json.\n';
               }
 
-              // Concise labels: security, vuln, auto
               await github.rest.issues.create({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
