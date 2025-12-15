@@ -1,21 +1,35 @@
-name: CI
+name: CI + CodeQL Advanced
 
 on:
   push:
     branches: ["main"]
   pull_request:
     branches: ["main"]
+  schedule:
+    - cron: "37 8 * * 5"
+
+# REQUIRED for CodeQL SARIF upload
+permissions:
+  contents: read
+  security-events: write
+  actions: read
 
 jobs:
+  # ============================================================
+  # CI — Node.js build, audit, artifact upload, issue creation
+  # ============================================================
   build:
+    name: CI (Node ${{ matrix.node-version }})
     runs-on: ubuntu-latest
 
     strategy:
+      fail-fast: false
       matrix:
         node-version: [18.x, 20.x]
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
@@ -29,13 +43,14 @@ jobs:
       - name: Build
         run: npm run build
 
+      # Dependency vulnerability scan (non-fatal)
       - id: audit
         name: Dependency vulnerability scan
+        shell: bash
         run: |
           npm audit --json > audit.json || true
-          node -e "const fs=require('fs');try{const a=JSON.parse(fs.readFileSync('audit.json'));const v=a&&a.metadata&&a.metadata.vulnerabilities?Object.values(a.metadata.vulnerabilities).reduce((s,n)=>s+n,0):0;console.log(v>0)}catch(e){console.log(false)}" > /tmp/vulnerable
+          node -e "const fs=require('fs');try{const a=JSON.parse(fs.readFileSync('audit.json'));const v=a?.metadata?.vulnerabilities?Object.values(a.metadata.vulnerabilities).reduce((s,n)=>s+n,0):0;console.log(v>0)}catch{console.log(false)}" > /tmp/vulnerable
           echo "vulnerable=$(cat /tmp/vulnerable)" >> $GITHUB_OUTPUT
-        shell: bash
 
       - name: Upload audit JSON artifact
         uses: actions/upload-artifact@v4
@@ -60,36 +75,64 @@ jobs:
             });
 
             if (existing.data.some(i => i.title === title)) {
-              console.log('Open issue with the same title already exists — skipping creation.');
-            } else {
-              let body = `A vulnerability has been detected in the project dependencies.\n\nCommit: ${context.sha}\nRef: ${context.ref}\nActor: ${context.actor}\n\nAudit artifact: audit-json-node-${{ matrix.node-version }}\n\nFull audit JSON:\n\n`;
-
-              try {
-                const audit = fs.readFileSync('audit.json', 'utf8');
-                body += '```json\n' + audit + '\n```\n';
-              } catch {
-                body += 'Could not read audit.json.\n';
-              }
-
-              await github.rest.issues.create({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                title,
-                body,
-                labels: ['security', 'vuln', 'auto']
-              });
+              console.log('Open issue already exists — skipping.');
+              return;
             }
 
-  codeql:
-    name: CodeQL
-    runs-on: ubuntu-latest
+            let body =
+              `A vulnerability has been detected in the project dependencies.\n\n` +
+              `Node version: ${{ matrix.node-version }}\n` +
+              `Commit: ${context.sha}\n` +
+              `Ref: ${context.ref}\n` +
+              `Actor: ${context.actor}\n\n` +
+              `Artifact: audit-json-node-${{ matrix.node-version }}\n\n` +
+              `Full audit JSON:\n\n`;
+
+            try {
+              body += '```json\n' + fs.readFileSync('audit.json', 'utf8') + '\n```';
+            } catch {
+              body += 'Could not read audit.json.';
+            }
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              body,
+              labels: ['security', 'vuln', 'auto']
+            });
+
+  # ============================================================
+  # CODEQL — Advanced security scanning
+  # ============================================================
+  analyze:
+    name: CodeQL Analyze (${{ matrix.language }})
+
+    # Prevent SARIF upload failure on forked PRs
+    if: github.event_name != 'pull_request'
+
+    runs-on: ${{ (matrix.language == 'swift' && 'macos-latest') || 'ubuntu-latest' }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - language: actions
+            build-mode: none
+          - language: javascript-typescript
+            build-mode: none
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v2
+        uses: github/codeql-action/init@v4
         with:
-          languages: javascript
-      - name: Autobuild
-        uses: github/codeql-action/autobuild@v2
+          languages: ${{ matrix.language }}
+          build-mode: ${{ matrix.build-mode }}
+
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v2
+        uses: github/codeql-action/analyze@v4
+        with:
+          category: "/language:${{ matrix.language }}"
