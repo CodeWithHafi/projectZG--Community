@@ -26,7 +26,7 @@ const setAuthCookies = (res, session) => {
 // Shared password reset logic
 async function handlePasswordResetRequest(email) {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${process.env.APP_URL || 'http://localhost:3000'}/reset-password/update`,
+        redirectTo: `${process.env.ALLOWED_ORIGINS || 'http://localhost:3000'}/reset-password/update`,
     });
     if (error) throw error;
 }
