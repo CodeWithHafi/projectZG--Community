@@ -30,10 +30,10 @@ const authMiddleware = (req, res, next) => {
         if (error || !data.user) {
             console.error('Auth Middleware Verification Failed:', error ? error.message : 'No user');
 
-            // If the user doesn't exist (e.g. deleted from DB but token remains), clear cookies
+            // If the user doesn't exist (e.g. deleted from DB but token remains) OR token is expired/invalid, clear cookies
             if (res.cookies && (res.cookies['sb-access-token'] || res.cookies['sb-refresh-token'])) {
-                res.clearCookie('sb-access-token');
-                res.clearCookie('sb-refresh-token');
+                res.clearCookie('sb-access-token', { path: '/' });
+                res.clearCookie('sb-refresh-token', { path: '/' });
             }
             return res.status(401).json({ error: 'Unauthorized: Invalid token or user check failed' });
         }
@@ -41,6 +41,15 @@ const authMiddleware = (req, res, next) => {
         req.user = data.user;
         next();
     }).catch(err => {
+        // Specific handling for JWT expiry/invalid signature which might throw instead of returning data.error (depending on supabase version)
+        if (err.message && (err.message.includes('expired') || err.message.includes('invalid JWT'))) {
+            if (res.cookies && (res.cookies['sb-access-token'] || res.cookies['sb-refresh-token'])) {
+                res.clearCookie('sb-access-token', { path: '/' });
+                res.clearCookie('sb-refresh-token', { path: '/' });
+            }
+            return res.status(401).json({ error: 'Unauthorized: Token expired' });
+        }
+
         console.error('Auth Middleware Exception:', err);
         res.status(500).json({ error: 'Internal Server Error during auth' });
     });

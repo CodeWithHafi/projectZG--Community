@@ -11,7 +11,9 @@ const cookieParser = require('cookie-parser');
 app.use(cookieParser());
 
 // Trust Proxy for Vercel (Ensure req.protocol is 'https')
-app.enable('trust proxy');
+// Trust Proxy: 'loopback' is safer than true for single-instance, allows rate limiters to work correctly.
+// If behind a specific reverse proxy (like Vercel/Cloudflare), use that IP or just 'loopback' if strictly local/containerized.
+app.set('trust proxy', 'loopback');
 
 // CORS configuration
 const allowedOrigins = (process.env.ALLOWED_ORIGINS || '').split(',').map(o => o.trim());
