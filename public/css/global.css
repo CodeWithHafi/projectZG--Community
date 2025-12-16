@@ -9,30 +9,35 @@
     --color-primary: rgb(var(--color-primary-rgb));
 
     /* Glassmorphism Core */
-    --glass-bg: rgba(255, 255, 255, 0.15);
-    /* Slightly more opaque for visibility */
-    --glass-border: rgba(255, 255, 255, 0.3);
-    --glass-blur: 16px;
+    --glass-bg: rgba(255, 255, 255, 0.25);
+    /* More opaque for 'proper white' feel */
+    --glass-border: rgba(255, 255, 255, 0.4);
+    --glass-blur: 20px;
     --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
 
-    /* Text Colors */
-    --color-text-main-rgb: 31, 41, 55;
-    /* gray-800 */
-    --color-text-secondary-rgb: 75, 85, 99;
-    /* gray-600 - Darker for contrast on glass */
+    /* Text Colors - Pure Black for "Only Black" feel */
+    --color-text-main-rgb: 0, 0, 0;
+    /* Pure Black */
+    --color-text-secondary-rgb: 30, 30, 30;
+    /* Very Dark Gray */
     --color-hover-bg-rgb: 255, 255, 255;
     /* white */
-    --color-hover-opacity: 0.3;
+    --color-hover-opacity: 0.4;
 
     /* Status */
     --color-liked-rgb: 239, 68, 68;
     /* red-500 */
 
     /* Global Background Gradients (Fixed in background) */
-    --bg-gradient-1: #ff9a9e;
-    --bg-gradient-2: #fad0c4;
-    --bg-gradient-3: #a18cd1;
-    --bg-gradient-4: #fbc2eb;
+    /* Shades of Red as requested */
+    --bg-gradient-1: #ef4444;
+    /* Red 500 */
+    --bg-gradient-2: #f87171;
+    /* Red 400 */
+    --bg-gradient-3: #b91c1c;
+    /* Red 700 */
+    --bg-gradient-4: #fee2e2;
+    /* Red 100 */
 }
 
 /* -------------------------------------------------------------------------- */
