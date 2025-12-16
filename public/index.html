@@ -79,11 +79,7 @@
                 <span class="font-medium ml-3 hidden lg:inline">Settings</span>
             </button>
             
-            <!-- Theme Toggle - Desktop -->
-            <button onclick="toggleTheme()" class="nav-link mt-auto mb-4 flex items-center justify-center lg:justify-start p-3 rounded-xl hover:bg-hover-bg text-secondary hover:text-primary w-12 h-12 lg:w-full lg:h-auto">
-                <i data-lucide="sun-moon" id="theme-icon-desktop" class="w-6 h-6"></i>
-                <span class="font-medium ml-3 hidden lg:inline">Toggle Theme</span>
-            </button>
+
 
         </nav>
 
@@ -193,51 +189,62 @@
                         </div>
 
                         <!-- User Info -->
-                        <div class="flex flex-col items-center text-center">
-                            <!-- Helper: Use a default avatar if none provided, JS will update -->
-                            <img id="profile-display-avatar" src="https://placehold.co/96x96/e2e8f0/64748b?text=..." class="w-24 h-24 rounded-full mb-4 border-4 border-app object-cover" alt="Profile Avatar" onerror="this.onerror=null;this.src='https://placehold.co/96x96/e2e8f0/64748b?text=...'">
-                            <h3 id="profile-display-name" class="text-2xl font-bold text-main">...</h3>
-                            <p id="profile-display-username" class="text-md text-secondary">...</p>
-                            <p id="profile-display-bio" class="text-sm text-main mt-2 max-w-sm"></p>
+                        <div class="flex flex-col md:flex-row md:items-start md:space-x-8 items-center text-center md:text-left">
+                            
+                            <!-- Avatar Section -->
+                            <div class="shrink-0 mb-4 md:mb-0">
+                                <img id="profile-display-avatar" src="https://placehold.co/96x96/e2e8f0/64748b?text=..." class="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-app object-cover" alt="Profile Avatar" onerror="this.onerror=null;this.src='https://placehold.co/96x96/e2e8f0/64748b?text=...'">
+                            </div>
 
-                            <!-- Stats -->
-                            <div class="flex justify-around w-full mt-4 p-2 rounded-xl transition-colors duration-300">
-                                <div class="flex flex-col items-center">
-                                    <span class="text-xl font-bold text-main">0</span>
-                                    <span class="text-sm text-secondary">Posts</span>
+                            <!-- Info & Stats Section -->
+                            <div class="flex-1 w-full">
+                                <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-2">
+                                    <div>
+                                        <h3 id="profile-display-name" class="text-2xl font-bold text-main">...</h3>
+                                        <p id="profile-display-username" class="text-md text-secondary">...</p>
+                                    </div>
+                                    
+                                    <!-- Actions (Moved here for desktop) -->
+                                    <div class="flex items-center justify-center md:justify-start space-x-3 mt-4 md:mt-0">
+                                        <button onclick="showModal('editProfileModal')" class="py-2 px-6 glass-button text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity duration-200">
+                                            Edit Profile
+                                        </button>
+                                        <button class="p-2 glass-button-secondary text-main rounded-lg hover:bg-white/10 transition-colors duration-200" title="Share">
+                                            <i data-lucide="share-2" class="w-5 h-5"></i>
+                                        </button>
+                                    </div>
                                 </div>
-                                <div class="flex flex-col items-center">
-                                    <span class="text-xl font-bold text-main">0</span>
-                                    <span class="text-sm text-secondary">Followers</span>
+
+                                <p id="profile-display-bio" class="text-sm text-main mt-2 mb-4 max-w-lg md:mx-0 mx-auto"></p>
+
+                                <!-- Stats -->
+                                <div class="flex justify-around md:justify-start md:space-x-8 w-full p-2 rounded-xl transition-colors duration-300 border-t border-b border-white/5 md:border-none">
+                                    <div class="flex flex-col items-center md:items-start">
+                                        <span class="text-xl font-bold text-main">0</span>
+                                        <span class="text-sm text-secondary">Posts</span>
+                                    </div>
+                                    <div class="flex flex-col items-center md:items-start">
+                                        <span class="text-xl font-bold text-main">0</span>
+                                        <span class="text-sm text-secondary">Followers</span>
+                                    </div>
+                                    <div class="flex flex-col items-center md:items-start">
+                                        <span class="text-xl font-bold text-main">0</span>
+                                        <span class="text-sm text-secondary">Following</span>
+                                    </div>
                                 </div>
-                                <div class="flex flex-col items-center">
-                                    <span class="text-xl font-bold text-main">0</span>
-                                    <span class="text-sm text-secondary">Following</span>
-                                </div>
                             </div>
+                        </div>
 
+                        <!-- Tabs -->
+                        <div class="flex justify-around w-full border-b border-white/10 mt-8">
+                            <button onclick="SwitchProfileTab('posts')" class="profile-tab py-3 text-primary border-b-2 border-primary font-semibold transition-colors duration-200 w-full">Posts</button>
+                            <button onclick="SwitchProfileTab('saved')" class="profile-tab py-3 text-secondary hover:text-primary transition-colors duration-200 w-full">Saved</button>
+                            <button onclick="SwitchProfileTab('tagged')" class="profile-tab py-3 text-secondary hover:text-primary transition-colors duration-200 w-full">Tagged</button>
+                        </div>
 
-                            <!-- Actions -->
-                            <div class="flex items-center justify-center space-x-3 mt-6 w-full max-w-sm mx-auto">
-                                <button onclick="showModal('editProfileModal')" class="flex-1 py-2 glass-button text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity duration-200">
-                                    Edit Profile
-                                </button>
-                                <button class="p-2 glass-button-secondary text-main rounded-lg hover:bg-white/10 transition-colors duration-200" title="Share">
-                                    <i data-lucide="share-2" class="w-5 h-5"></i>
-                                </button>
-                            </div>
-
-                            <!-- Tabs -->
-                            <div class="flex justify-around w-full border-b border-white/10 mt-8">
-                                <button onclick="SwitchProfileTab('posts')" class="profile-tab py-3 text-primary border-b-2 border-primary font-semibold transition-colors duration-200 w-full">Posts</button>
-                                <button onclick="SwitchProfileTab('saved')" class="profile-tab py-3 text-secondary hover:text-primary transition-colors duration-200 w-full">Saved</button>
-                                <button onclick="SwitchProfileTab('tagged')" class="profile-tab py-3 text-secondary hover:text-primary transition-colors duration-200 w-full">Tagged</button>
-                            </div>
-
-                            <!-- Post Grid -->
-                            <div id="profile-posts-grid" class="grid grid-cols-3 gap-1 mt-1 w-full">
-                                <!-- Dynamic Posts -->
-                            </div>
+                        <!-- Post Grid -->
+                        <div id="profile-posts-grid" class="grid grid-cols-3 gap-1 mt-1 w-full">
+                            <!-- Dynamic Posts -->
                         </div>
                     </div>
                 </div>
@@ -361,10 +368,7 @@
                 <i data-lucide="search" class="w-6 h-6"></i>
             </button>
 
-            <!-- Theme Toggle -->
-            <button onclick="toggleTheme()" class="mobile-nav-link text-secondary">
-                <i data-lucide="sun-moon" id="theme-icon-mobile" class="w-6 h-6"></i>
-            </button>
+
             
             <!-- Profile -->
             <button onclick="loadMyProfile()" class="mobile-nav-link text-secondary">
@@ -614,9 +618,10 @@
         </div>
     </div>
     
-    <!-- Toast Notifications -->
-    <script src="js/ui/toast.js"></script>
-    <!-- Configuration -->
+    <!-- UI Scripts -->
+    <script src="js/ui/skeleton.js"></script>
+    
+    <!-- Main Logic -->
     <script src="js/script.js"></script>
 </body>
 </html>

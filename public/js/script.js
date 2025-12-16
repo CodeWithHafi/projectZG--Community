@@ -1046,7 +1046,11 @@ async function fetchFeed(filter = null) {
     currentFeedFilter = feedFilter;
 
     // Show loading
-    feedContainer.innerHTML = '<div class="flex justify-center py-10"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>';
+    if (typeof SkeletonLoader !== 'undefined') {
+        feedContainer.innerHTML = SkeletonLoader.getPostSkeleton(2);
+    } else {
+        feedContainer.innerHTML = '<div class="flex justify-center py-10"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>';
+    }
 
     try {
         const url = feedFilter === 'following'
@@ -1090,16 +1094,7 @@ window.SwitchFeedFilter = (filter) => {
         if (filter === 'following') {
             indicator.style.transform = 'translateX(0)';
         } else {
-            // Move fully to the right. Since width is calc(50%-4px) and left is 1 (4px),
-            // translateX(100%) moves it by its own width. 
-            // The gap is small. 100% + some gap?
-            // Actually, in the HTML: w-[calc(50%-4px)]. 
-            // If we move 100%, we move 50% - 4px.
-            // We want to reach the other side.
-            // Total width ~ 100%. One button is ~50%.
-            // translateX(100%) plus margin adjustment. 
-            // Let's try roughly 104% or just 100% and rely on visual.
-            indicator.style.transform = 'translateX(calc(100% + 8px))';
+            indicator.style.transform = 'translateX(100%)';
         }
     }
 
@@ -1936,9 +1931,36 @@ async function loadTrendingPosts() {
     const grid = document.getElementById('trending-grid');
     if (!grid) return;
 
-    // Mock Data for Trending
-    // In a real app, this would be `POST /posts/trending`
-    // We'll reuse existing post fetching but randomization or specific IDs for demo
+    if (typeof SkeletonLoader !== 'undefined') {
+        grid.innerHTML = SkeletonLoader.getGridSkeleton(9);
+    }
+
+    // Function to render posts to grid
+    const renderGrid = (posts) => {
+        grid.innerHTML = posts.map(post => {
+            const img = (post.media_urls && post.media_urls.length > 0) ? post.media_urls[0] : null;
+            if (!img) return ''; // Only show media posts in grid
+
+            // Helper to check video
+            const isVideo = img.match(/\.(mp4|webm|ogg|mov)$/i);
+            const mediaHtml = isVideo
+                ? `<video src="${img}" class="w-full h-full object-cover"></video>`
+                : `<img src="${img}" class="w-full h-full object-cover">`;
+
+            return `
+                <div class="aspect-square relative cursor-pointer group overflow-hidden rounded-lg bg-placeholder-bg" onclick="OpenCommentsModal('${post.id}')">
+                    ${mediaHtml}
+                    <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center space-x-4 text-white font-bold">
+                        <span class="flex items-center"><i data-lucide="heart" class="w-5 h-5 mr-1 fill-white"></i> ${post.likes_count || 0}</span>
+                        <span class="flex items-center"><i data-lucide="message-circle" class="w-5 h-5 mr-1 fill-white"></i> ${post.comments_count || 0}</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    };
+
     try {
         const res = await fetch(`${API_URL}/posts/feed`, { headers: getHeaders(), credentials: 'include' });
         if (res.ok) {
@@ -1946,33 +1968,34 @@ async function loadTrendingPosts() {
             // Simulate sorting by likes (mock)
             const trending = posts.sort((a, b) => (b.likes_count || 0) - (a.likes_count || 0)).slice(0, 9);
 
-            grid.innerHTML = trending.map(post => {
-                const img = (post.media_urls && post.media_urls.length > 0) ? post.media_urls[0] : null;
-                if (!img) return ''; // Only show media posts in grid
-
-                // Helper to check video
-                const isVideo = img.match(/\.(mp4|webm|ogg|mov)$/i);
-                const mediaHtml = isVideo
-                    ? `<video src="${img}" class="w-full h-full object-cover"></video>`
-                    : `<img src="${img}" class="w-full h-full object-cover">`;
-
-                return `
-                    <div class="aspect-square relative cursor-pointer group overflow-hidden rounded-lg bg-placeholder-bg" onclick="OpenCommentsModal('${post.id}')">
-                        ${mediaHtml}
-                        <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center space-x-4 text-white font-bold">
-                            <span class="flex items-center"><i data-lucide="heart" class="w-5 h-5 mr-1 fill-white"></i> ${post.likes_count || 0}</span>
-                            <span class="flex items-center"><i data-lucide="message-circle" class="w-5 h-5 mr-1 fill-white"></i> ${post.comments_count || 0}</span>
-                        </div>
-                    </div>
-                `
-            }).join('');
-
-            lucide.createIcons();
+            if (trending.length > 0) {
+                renderGrid(trending);
+            } else {
+                renderGrid(getMockTrendingPosts());
+            }
+        } else {
+            throw new Error("API not ok");
         }
     } catch (e) {
-        console.error("Trending fetch error", e);
-        grid.innerHTML = '<div class="col-span-full text-center text-secondary py-10">Failed to load trending</div>';
+        console.warn("Trending fetch error, using valid mock data", e);
+        // Fallback to High Quality Mock Data
+        renderGrid(getMockTrendingPosts());
     }
+}
+
+function getMockTrendingPosts() {
+    // Returns 9 high-quality mock posts
+    return [
+        { id: 'm1', likes_count: 1205, comments_count: 45, media_urls: ['https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=400&auto=format&fit=crop'] }, // Coding setup
+        { id: 'm2', likes_count: 892, comments_count: 32, media_urls: ['https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=400&auto=format&fit=crop'] }, // Laptop code
+        { id: 'm3', likes_count: 2300, comments_count: 120, media_urls: ['https://images.unsplash.com/photo-1531297461136-82lw9z1a2b3c?q=80&w=400&auto=format&fit=crop'] }, // Tech Abstract
+        { id: 'm4', likes_count: 654, comments_count: 12, media_urls: ['https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=400&auto=format&fit=crop'] }, // Laptop Coffee
+        { id: 'm5', likes_count: 3210, comments_count: 210, media_urls: ['https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=400&auto=format&fit=crop'] }, // Matrix Code
+        { id: 'm6', likes_count: 980, comments_count: 56, media_urls: ['https://images.unsplash.com/photo-1504639725590-34d0984388bd?q=80&w=400&auto=format&fit=crop'] }, // Conference
+        { id: 'm7', likes_count: 1540, comments_count: 88, media_urls: ['https://images.unsplash.com/photo-1550439062-609e1531270e?q=80&w=400&auto=format&fit=crop'] }, // Server Room
+        { id: 'm8', likes_count: 210, comments_count: 5, media_urls: ['https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=400&auto=format&fit=crop'] }, // Cyberpunk city
+        { id: 'm9', likes_count: 3300, comments_count: 405, media_urls: ['https://images.unsplash.com/photo-1519389950473-47ba0277781c?q=80&w=400&auto=format&fit=crop'] }  // Team working
+    ];
 }
 
 function getRecommendedUsers() {
@@ -2100,6 +2123,15 @@ async function identifyCurrentUser() {
 
 // --- Notifications Logic ---
 async function fetchNotifications() {
+    const container = document.querySelector('#notificationsView .space-y-4');
+    if (container) {
+        if (typeof SkeletonLoader !== 'undefined') {
+            container.innerHTML = SkeletonLoader.getNotificationSkeleton(5);
+        } else {
+            container.innerHTML = '<div class="flex justify-center py-10"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>';
+        }
+    }
+
     try {
         // Optimistic UI: If we already have a badge, ensure we clear it if viewed (logic later)
         const response = await fetch(`${API_URL}/notifications`, {
@@ -2569,30 +2601,85 @@ function debounce(func, wait) {
  * Perform Search API call
  * @param {string} query 
  */
+const searchInput = document.getElementById('search-input');
+if (searchInput) {
+    searchInput.addEventListener('input', debounce((e) => {
+        performSearch(e.target.value);
+    }, 500)); // Increased debounce time for better UX
+}
+
+// Mock Data for Search Fallback
+function getMockSearchData(query) {
+    // Generate mock users based on query
+    const mockUsers = [
+        { username: `${query}_fan`, full_name: `${query} Fan Club`, avatar_url: null },
+        { username: `official_${query}`, full_name: `Official ${query}`, avatar_url: null },
+        { username: `${query}lover`, full_name: `${query} Lover`, avatar_url: null }
+    ];
+
+    // Generate mock hashtags
+    const mockHashtags = [`#${query}`, `#${query}2024`, `#ilove${query}`];
+
+    return { users: mockUsers, hashtags: mockHashtags };
+}
+
+/**
+ * Perform Search API call
+ * @param {string} query 
+ */
 async function performSearch(query) {
     const resultsContainer = document.getElementById('search-results');
 
     if (!query || query.trim().length === 0) {
-        resultsContainer.innerHTML = `
-            <div class="text-center py-10 text-secondary opacity-50">
+        resultsContainer.innerHTML = body.classList.contains('dark') ?
+            `<div class="text-center py-10 text-secondary opacity-50">
+                <i data-lucide="search" class="w-12 h-12 mx-auto mb-3"></i>
+                <p>Start typing to search...</p>
+            </div>` :
+            `<div class="text-center py-10 text-secondary opacity-50">
                 <i data-lucide="search" class="w-12 h-12 mx-auto mb-3"></i>
                 <p>Start typing to search...</p>
             </div>`;
-        if (window.lucide) lucide.createIcons();
+
+        if (typeof lucide !== 'undefined') lucide.createIcons();
         return;
     }
 
-    resultsContainer.innerHTML = `
-        <div class="flex justify-center p-4">
-            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-        </div>
-    `;
+    // Use Skeleton Loader
+    if (typeof SkeletonLoader !== 'undefined') {
+        resultsContainer.innerHTML = SkeletonLoader.getUserSkeleton(3);
+    } else {
+        // Fallback if Skeleton not loaded
+        resultsContainer.innerHTML = `
+            <div class="flex justify-center p-4">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>`;
+    }
 
     try {
         const response = await fetch(`${API_URL}/search?q=${encodeURIComponent(query)}`);
+
+        // Handle non-200 responses as failure to trigger catch/mock
+        if (!response.ok) throw new Error('Search API error');
+
         const data = await response.json();
 
-        if (data.users.length === 0 && data.hashtags.length === 0) {
+        // Validate data structure
+        const users = Array.isArray(data.users) ? data.users : [];
+        const hashtags = Array.isArray(data.hashtags) ? data.hashtags : [];
+
+        if (users.length === 0 && hashtags.length === 0) {
+            // Simulate "No results" vs Mock Data decision
+            // For this task, we want to SHOW mock data if real search returns nothing
+            // to prevent "infinite loading" feeling or empty states during dev.
+            // However, usually "No results" is correct. 
+            // BUT user explicitly asked for "mock data" instead of infinite loading.
+            // So if API returns empty, we might want mock data? 
+            // actually user said "fix why in search it is showinga infinti loadin scroll instead of mock data"
+            // This implies they EXPECTED mock data but got infinite loading (likely due to error/hanging).
+            // I will simply render what I have. If empty, I'll render Empty State. 
+            // But I will add MOCK DATA in the catch block for robustness.
+
             resultsContainer.innerHTML = `
                 <div class="text-center py-10 text-secondary">
                     <p>No results found for "${query}"</p>
@@ -2600,55 +2687,67 @@ async function performSearch(query) {
             return;
         }
 
-        let html = '';
-
-        // Users Section
-        if (data.users.length > 0) {
-            html += `<h4 class="text-xs font-bold text-secondary uppercase tracking-wider mb-2 mt-2 px-2">People</h4>`;
-            data.users.forEach(user => {
-                const avatar = user.avatar_url || `https://placehold.co/40x40/e2e8f0/64748b?text=${user.username.substring(0, 2).toUpperCase()}`;
-                html += `
-                    <button onclick="loadPublicProfile('${user.username}')" class="w-full flex items-center p-2 hover:bg-hover-bg rounded-lg transition-colors text-left group">
-                        <img src="${avatar}" class="w-10 h-10 rounded-full object-cover mr-3 border border-app" onerror="this.src='https://placehold.co/40x40/e2e8f0/64748b?text=User'">
-                        <div>
-                            <p class="font-bold text-main group-hover:text-primary transition-colors">${user.username}</p>
-                            <p class="text-xs text-secondary">${user.full_name || ''}</p>
-                        </div>
-                    </button>
-                `;
-            });
-        }
-
-        // Hashtags Section
-        if (data.hashtags.length > 0) {
-            html += `<h4 class="text-xs font-bold text-secondary uppercase tracking-wider mb-2 mt-4 px-2">Hashtags</h4>`;
-            data.hashtags.forEach(tag => {
-                html += `
-                    <button class="w-full flex items-center p-3 hover:bg-hover-bg rounded-lg transition-colors text-left group">
-                        <div class="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center mr-3 group-hover:bg-primary group-hover:text-white transition-colors">
-                            <i data-lucide="hash" class="w-5 h-5"></i>
-                        </div>
-                        <span class="font-medium text-main group-hover:text-primary transition-colors">${tag}</span>
-                    </button>
-                `;
-            });
-        }
-
-        resultsContainer.innerHTML = html;
-        if (window.lucide) lucide.createIcons();
+        renderSearchResults(users, hashtags, query);
 
     } catch (err) {
-        console.error("Search failed:", err);
-        resultsContainer.innerHTML = `<div class="text-red-500 text-center p-4">Search failed. Please try again.</div>`;
+        console.warn("Search failed or offline, using Mock Data:", err);
+
+        // Fallback to Mock Data
+        const mockData = getMockSearchData(query);
+        renderSearchResults(mockData.users, mockData.hashtags, query);
+
+        if (typeof Toast !== 'undefined') {
+            // Optional: Notify user it's mock data
+            // Toast.info("Showing offline/mock results");
+        }
     }
 }
 
-// Attach Search Listener
-const searchInput = document.getElementById('search-input');
-if (searchInput) {
-    searchInput.addEventListener('input', debounce((e) => {
-        performSearch(e.target.value);
-    }, 300));
+function renderSearchResults(users, hashtags, query) {
+    const resultsContainer = document.getElementById('search-results');
+    let html = '';
+
+    // Users Section
+    if (users.length > 0) {
+        html += `< h4 class="text-xs font-bold text-secondary uppercase tracking-wider mb-2 mt-2 px-2" > People</h4 > `;
+        users.forEach(user => {
+            const avatar = user.avatar_url || `https://ui-avatars.com/api/?name=${user.username}&background=random`;
+            html += `
+                <button onclick="loadPublicProfile('${user.username}')" class="w-full flex items-center p-2 hover:bg-hover-bg rounded-lg transition-colors text-left group">
+                    <img src="${avatar}" class="w-10 h-10 rounded-full object-cover mr-3 border border-app" onerror="this.src='https://placehold.co/40x40/e2e8f0/64748b?text=U'">
+                    <div>
+                        <p class="font-bold text-main group-hover:text-primary transition-colors">${user.username}</p>
+                        <p class="text-xs text-secondary">${user.full_name || user.username}</p>
+                    </div>
+                </button>
+            `;
+        });
+    }
+
+    // Hashtags Section
+    if (hashtags.length > 0) {
+        html += `<h4 class="text-xs font-bold text-secondary uppercase tracking-wider mb-2 mt-4 px-2">Hashtags</h4>`;
+        hashtags.forEach(tag => {
+            html += `
+                <button class="w-full flex items-center p-3 hover:bg-hover-bg rounded-lg transition-colors text-left group">
+                    <div class="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center mr-3 group-hover:bg-primary group-hover:text-white transition-colors">
+                        <i data-lucide="hash" class="w-5 h-5"></i>
+                    </div>
+                    <span class="font-medium text-main group-hover:text-primary transition-colors">${tag}</span>
+                </button>
+            `;
+        });
+    }
+
+    if (users.length === 0 && hashtags.length === 0) {
+        html = `
+            <div class="text-center py-10 text-secondary">
+                <p>No results found for "${query}"</p>
+            </div>`;
+    }
+
+    resultsContainer.innerHTML = html;
+    if (typeof lucide !== 'undefined') lucide.createIcons();
 }
 
 // --- Initialization ---
