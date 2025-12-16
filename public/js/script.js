@@ -1521,7 +1521,11 @@ async function loadPublicProfile(username) {
 
 
             // Real comparison logic
-            const isOwnProfile = currentUser && (currentUser.username === profile.username || currentUser.id === profile.id);
+            const isOwnProfile = currentUser && (
+                (currentUser.username && profile.username && currentUser.username === profile.username) ||
+                (currentUser.id && profile.id && String(currentUser.id) === String(profile.id))
+            );
+
             renderProfileView(profile, isOwnProfile);
 
             // If Guest, show the "Login to Connect" modal after a short delay or immediately
@@ -1554,6 +1558,34 @@ function updateUserContext(profile) {
     }
     if (createPostName) {
         createPostName.textContent = profile.full_name || profile.username;
+    }
+
+    // Update Sidebar Avatar
+    const sidebarIcon = document.getElementById('sidebar-user-icon');
+    const sidebarAvatar = document.getElementById('sidebar-user-avatar');
+    if (sidebarIcon && sidebarAvatar) {
+        if (profile.avatar_url) {
+            sidebarAvatar.src = profile.avatar_url;
+            sidebarAvatar.classList.remove('hidden');
+            sidebarIcon.classList.add('hidden');
+        } else {
+            sidebarAvatar.classList.add('hidden');
+            sidebarIcon.classList.remove('hidden');
+        }
+    }
+
+    // Update Mobile Avatar 
+    const mobileIcon = document.getElementById('mobile-user-icon');
+    const mobileAvatar = document.getElementById('mobile-user-avatar');
+    if (mobileIcon && mobileAvatar) {
+        if (profile.avatar_url) {
+            mobileAvatar.src = profile.avatar_url;
+            mobileAvatar.classList.remove('hidden');
+            mobileIcon.classList.add('hidden');
+        } else {
+            mobileAvatar.classList.add('hidden');
+            mobileIcon.classList.remove('hidden');
+        }
     }
 }
 
@@ -1675,7 +1707,7 @@ async function renderProfileView(profile, isOwnProfile) {
     }
 
     // Actions (Edit vs Follow)
-    const actionsContainer = pView.querySelector('.flex.space-x-4.mt-6.w-full');
+    const actionsContainer = document.getElementById('profile-actions');
     if (actionsContainer) {
         if (isOwnProfile) {
             actionsContainer.innerHTML = `
@@ -2709,7 +2741,7 @@ function renderSearchResults(users, hashtags, query) {
 
     // Users Section
     if (users.length > 0) {
-        html += `< h4 class="text-xs font-bold text-secondary uppercase tracking-wider mb-2 mt-2 px-2" > People</h4 > `;
+        html += `<h4 class="text-xs font-bold text-secondary uppercase tracking-wider mb-2 mt-2 px-2">People</h4>`;
         users.forEach(user => {
             const avatar = user.avatar_url || `https://ui-avatars.com/api/?name=${user.username}&background=random`;
             html += `

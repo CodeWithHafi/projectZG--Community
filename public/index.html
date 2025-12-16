@@ -62,7 +62,10 @@
                     <span class="font-medium ml-3 hidden lg:inline">Search</span>
                 </button>
                 <button onclick="loadMyProfile()" class="nav-link flex items-center justify-center lg:justify-start p-3 rounded-xl hover:bg-hover-bg text-secondary hover:text-primary transition-all duration-200 w-12 h-12 lg:w-full lg:h-auto">
-                    <i data-lucide="user" class="w-6 h-6"></i>
+                    <div class="relative w-6 h-6">
+                        <i id="sidebar-user-icon" data-lucide="user" class="w-full h-full"></i>
+                        <img id="sidebar-user-avatar" src="" class="w-full h-full rounded-full object-cover hidden" alt="Avatar" onerror="this.onerror=null;this.src='https://placehold.co/24x24/e2e8f0/64748b?text=U'">
+                    </div>
                     <span class="font-medium ml-3 hidden lg:inline">Profile</span>
                 </button>
                 
@@ -205,7 +208,7 @@
                                     </div>
                                     
                                     <!-- Actions (Moved here for desktop) -->
-                                    <div class="flex items-center justify-center md:justify-start space-x-3 mt-4 md:mt-0">
+                                    <div id="profile-actions" class="flex items-center justify-center md:justify-start space-x-3 mt-4 md:mt-0">
                                         <button onclick="showModal('editProfileModal')" class="py-2 px-6 glass-button text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity duration-200">
                                             Edit Profile
                                         </button>
@@ -372,7 +375,10 @@
             
             <!-- Profile -->
             <button onclick="loadMyProfile()" class="mobile-nav-link text-secondary">
-                <i data-lucide="user" class="w-6 h-6"></i>
+                <div class="relative w-6 h-6">
+                    <i id="mobile-user-icon" data-lucide="user" class="w-full h-full"></i>
+                    <img id="mobile-user-avatar" src="" class="w-full h-full rounded-full object-cover hidden" alt="Avatar" onerror="this.onerror=null;this.src=''">
+                </div>
             </button>
         </div>
 
